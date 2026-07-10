@@ -1,0 +1,10 @@
+app_label: django_agreements
+groups:
+  - name: agreements-core
+    title: "Agreements & Consent"
+    models:
+      - Channel
+      - AgreementDefinition
+      - AgreementVersion
+      - ConsentRecord
+      - OrderAgreementSnapshot

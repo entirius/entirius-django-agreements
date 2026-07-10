@@ -1,0 +1,45 @@
+# AGENTS.md
+
+Consent & Agreements module for Volkanos — distribution `entirius-django-agreements`,
+Django app `django_agreements`. GDPR-compliant agreement versioning, consent tracking with
+append-only audit trail, and order agreement snapshots.
+
+## Commands
+
+| Command | Meaning |
+|---|---|
+| `make install` | sync dependencies (uv, incl. extras) |
+| `make check` | lint + format-check (ruff) |
+| `make fix` | auto-fix lint + format |
+| `make test` | test suite (pytest + pytest-django) |
+
+## Conventions
+
+- English only: code, docs, commits, branches, PRs.
+- MPL-2.0: every non-trivial source file carries the license header (pre-commit inserts it).
+- Toolchain: uv + ruff + hatchling + pytest; all config in `pyproject.toml`; `uv.lock` committed.
+- Git flow: `master` (production) + `develop` (integration); changes land via PR; semver tag on `master`.
+- Never rename the package / Django app_label / DB table prefix `django_agreements` — it is a schema contract.
+- Migrations are part of the public contract — never edit an already released migration.
+- Default: do not commit — git is the user's call.
+
+## Architecture
+
+- `models/` — `Channel` (own scoping model, no FK to PIM), `AgreementDefinition` (slug, category,
+  channels M2M), `AgreementVersion` (immutable, auto-versioned), `ConsentRecord` (append-only audit
+  log), `OrderAgreementSnapshot` (per-order text freeze).
+- `services/` — channel sync from PIM, definition/version CRUD with system-consent guards,
+  legal content history (ContentDB snapshots), consent recording and queries, order snapshots,
+  HMAC token service for consent confirmation links.
+- `schemas/` — pydantic request/response models.
+- `api/` — `admin/` (v2, JWT + IsAdminUser) and `public/` (v2, AllowAny, channel-scoped).
+
+Layer rule: `API → Services → Models → DB`. No ORM in views.
+
+## Gotchas
+
+- Optional integrations are lazy imports with `try/except ImportError` fallbacks:
+  `django_pim` (channel sync no-op), `django_contentdb` (legal snapshots return empty),
+  `django_email` (newsletter signup email skipped), `django_crm` (consent migration command aborts).
+- `ConsentRecord` is append-only — never update or delete rows; state queries take the latest record.
+- `AgreementVersion` is immutable once published; only draft versions accept PATCH.

@@ -1,0 +1,1647 @@
+# ContentDB legal pages for django-agreements.
+#
+# Creates three globally-scoped static pages (no channel restriction):
+#   - terms               Terms and Conditions (EN, PL, DE)
+#   - privacy             Privacy Policy (EN, PL, DE)
+#   - newsletter-policy   Newsletter Policy (EN, PL, DE)
+#
+# Load order (IMPORTANT):
+#   1. django_contentdb.cfg.yaml  — ContentType pk=1 (static-page), Language records
+#   2. This file                  — Content / Draft / Published / Route records
+#
+# Assumptions:
+#   ContentType pk=6  = legal-page
+#   Language pk=1     = EN
+#   Language pk=2     = PL
+#   Language pk=3     = DE
+#
+# PKs reserved by this fixture:
+#   Content      900-917  (odd = draft body, even = published snapshot)
+#   Draft        900-908
+#   Published    900-908
+#   Route        900-908
+#   ContentSet   900-902
+#   DraftToContentSet 900-908
+#
+# UUID namespaces:
+#   00000001-*  Terms and Conditions
+#   00000002-*  Privacy Policy
+#   00000003-*  Newsletter Policy
+#
+# Language suffix per record index within each page:
+#   01 = EN, 02 = PL, 03 = DE
+
+# =============================================================================
+# TERMS AND CONDITIONS
+# =============================================================================
+
+# --- EN: draft Content ---
+- model: django_contentdb.content
+  pk: 900
+  fields:
+    uid: 00000001-0001-4000-8000-000000000001
+    content:
+      tiles:
+        00000001-aa01-4000-8000-000000000001:
+          core_type: tile-txt-btn
+          title: "Terms and Conditions"
+          description: >-
+            <h1>Terms and Conditions</h1>
+            <p>These Terms and Conditions govern your use of our online store and the purchase of products
+            through our platform. By placing an order you confirm that you have read, understood, and
+            accepted these terms in full.</p>
+            <h2>1. Scope of Application</h2>
+            <p>These terms apply to all contracts concluded between the Seller and the Customer via this
+            online store. Any deviating terms of the Customer are not recognised unless the Seller
+            expressly agrees to their validity in writing.</p>
+            <h2>2. Ordering Process</h2>
+            <p>The presentation of products in the online store constitutes an invitation to submit an
+            offer. By clicking "Place Order" the Customer submits a binding offer to purchase the selected
+            products. A contract is formed when the Seller sends an order confirmation by email.</p>
+            <h2>3. Prices and Payment</h2>
+            <p>All prices are inclusive of applicable VAT. The Seller accepts major credit and debit cards,
+            bank transfer, and other payment methods displayed at checkout. Payment is due immediately upon
+            placing an order. In the event of payment default the Seller reserves the right to charge
+            statutory interest.</p>
+            <h2>4. Delivery</h2>
+            <p>Delivery times stated on the product page are estimates only. The Seller shall not be
+            liable for delays caused by third-party carriers or events outside its reasonable control.
+            Risk of loss passes to the Customer upon handover to the carrier.</p>
+            <h2>5. Right of Withdrawal</h2>
+            <p>In accordance with applicable EU consumer law, Customers have the right to withdraw from
+            the contract within 14 days of receiving the goods, without giving any reason. To exercise
+            this right, the Customer must notify the Seller by means of an unequivocal statement before
+            the withdrawal period expires.</p>
+            <h2>6. Returns and Refunds</h2>
+            <p>Returned goods must be in their original condition and packaging. The Seller will process
+            refunds within 14 days of receiving the returned goods or proof of return shipment, whichever
+            is earlier. Return shipping costs are borne by the Customer unless the goods are defective.</p>
+            <h2>7. Liability</h2>
+            <p>The Seller's liability for ordinary negligence is limited to foreseeable, contract-typical
+            damage. This limitation does not apply to claims arising from injury to life, body, or health,
+            or to damages caused by gross negligence or wilful misconduct.</p>
+            <h2>8. Governing Law</h2>
+            <p>These terms are governed by the law of the country in which the Seller is established.
+            Mandatory consumer protection provisions of the Customer's country of habitual residence
+            remain unaffected.</p>
+            <h2>9. Dispute Resolution</h2>
+            <p>The European Commission provides an online dispute resolution platform at
+            https://ec.europa.eu/consumers/odr. We are not obliged to participate in alternative dispute
+            resolution proceedings before a consumer arbitration board, but we are willing to do so.</p>
+      sections:
+        00000001-aa00-4000-8000-000000000001:
+          core_type: section-text
+          width: content_width
+      tiles_order:
+        00000001-aa00-4000-8000-000000000001:
+          - 00000001-aa01-4000-8000-000000000001
+      sections_order:
+        - 00000001-aa00-4000-8000-000000000001
+    extension: null
+    meta:
+      title: "Terms and Conditions"
+      description: "Terms and Conditions governing the use of our online store."
+      og_title: "Terms and Conditions"
+      og_description: "Read our Terms and Conditions before placing an order."
+    created_at: 2024-01-01 00:00:00+00:00
+    updated_at: 2024-01-01 00:00:00+00:00
+    category: null
+
+# --- EN: published snapshot ---
+- model: django_contentdb.content
+  pk: 901
+  fields:
+    uid: 00000001-0002-4000-8000-000000000002
+    content:
+      tiles:
+        00000001-aa01-4000-8000-000000000001:
+          core_type: tile-txt-btn
+          title: "Terms and Conditions"
+          description: >-
+            <h1>Terms and Conditions</h1>
+            <p>These Terms and Conditions govern your use of our online store and the purchase of products
+            through our platform. By placing an order you confirm that you have read, understood, and
+            accepted these terms in full.</p>
+            <h2>1. Scope of Application</h2>
+            <p>These terms apply to all contracts concluded between the Seller and the Customer via this
+            online store. Any deviating terms of the Customer are not recognised unless the Seller
+            expressly agrees to their validity in writing.</p>
+            <h2>2. Ordering Process</h2>
+            <p>The presentation of products in the online store constitutes an invitation to submit an
+            offer. By clicking "Place Order" the Customer submits a binding offer to purchase the selected
+            products. A contract is formed when the Seller sends an order confirmation by email.</p>
+            <h2>3. Prices and Payment</h2>
+            <p>All prices are inclusive of applicable VAT. The Seller accepts major credit and debit cards,
+            bank transfer, and other payment methods displayed at checkout. Payment is due immediately upon
+            placing an order. In the event of payment default the Seller reserves the right to charge
+            statutory interest.</p>
+            <h2>4. Delivery</h2>
+            <p>Delivery times stated on the product page are estimates only. The Seller shall not be
+            liable for delays caused by third-party carriers or events outside its reasonable control.
+            Risk of loss passes to the Customer upon handover to the carrier.</p>
+            <h2>5. Right of Withdrawal</h2>
+            <p>In accordance with applicable EU consumer law, Customers have the right to withdraw from
+            the contract within 14 days of receiving the goods, without giving any reason. To exercise
+            this right, the Customer must notify the Seller by means of an unequivocal statement before
+            the withdrawal period expires.</p>
+            <h2>6. Returns and Refunds</h2>
+            <p>Returned goods must be in their original condition and packaging. The Seller will process
+            refunds within 14 days of receiving the returned goods or proof of return shipment, whichever
+            is earlier. Return shipping costs are borne by the Customer unless the goods are defective.</p>
+            <h2>7. Liability</h2>
+            <p>The Seller's liability for ordinary negligence is limited to foreseeable, contract-typical
+            damage. This limitation does not apply to claims arising from injury to life, body, or health,
+            or to damages caused by gross negligence or wilful misconduct.</p>
+            <h2>8. Governing Law</h2>
+            <p>These terms are governed by the law of the country in which the Seller is established.
+            Mandatory consumer protection provisions of the Customer's country of habitual residence
+            remain unaffected.</p>
+            <h2>9. Dispute Resolution</h2>
+            <p>The European Commission provides an online dispute resolution platform at
+            https://ec.europa.eu/consumers/odr. We are not obliged to participate in alternative dispute
+            resolution proceedings before a consumer arbitration board, but we are willing to do so.</p>
+      sections:
+        00000001-aa00-4000-8000-000000000001:
+          core_type: section-text
+          width: content_width
+      tiles_order:
+        00000001-aa00-4000-8000-000000000001:
+          - 00000001-aa01-4000-8000-000000000001
+      sections_order:
+        - 00000001-aa00-4000-8000-000000000001
+    extension: null
+    meta:
+      title: "Terms and Conditions"
+      description: "Terms and Conditions governing the use of our online store."
+      og_title: "Terms and Conditions"
+      og_description: "Read our Terms and Conditions before placing an order."
+    created_at: 2024-01-01 00:00:00+00:00
+    updated_at: 2024-01-01 00:00:00+00:00
+    category: null
+
+# --- PL: draft Content ---
+- model: django_contentdb.content
+  pk: 902
+  fields:
+    uid: 00000001-0003-4000-8000-000000000003
+    content:
+      tiles:
+        00000001-bb01-4000-8000-000000000001:
+          core_type: tile-txt-btn
+          title: "Regulamin"
+          description: >-
+            <h1>Regulamin sklepu internetowego</h1>
+            <p>Niniejszy Regulamin określa zasady korzystania ze sklepu internetowego oraz warunki
+            zawierania umów sprzedaży. Składając zamówienie, Klient potwierdza, że zapoznał się
+            z Regulaminem i akceptuje jego postanowienia.</p>
+            <h2>1. Postanowienia ogólne</h2>
+            <p>Regulamin stosuje się do wszystkich umów zawieranych między Sprzedawcą a Klientem za
+            pośrednictwem sklepu internetowego. Wszelkie odmienne warunki Klienta nie są uznawane,
+            chyba że Sprzedawca wyraźnie wyraził na nie pisemną zgodę.</p>
+            <h2>2. Składanie zamówień</h2>
+            <p>Prezentacja produktów w sklepie stanowi zaproszenie do złożenia oferty. Klikając
+            „Złóż zamówienie", Klient składa wiążącą ofertę zakupu wybranych produktów. Umowa
+            zostaje zawarta z chwilą wysłania przez Sprzedawcę potwierdzenia zamówienia drogą
+            elektroniczną.</p>
+            <h2>3. Ceny i płatności</h2>
+            <p>Wszystkie ceny zawierają należny podatek VAT. Sprzedawca akceptuje karty płatnicze,
+            przelew bankowy oraz inne metody płatności wskazane przy kasie. Płatność jest wymagana
+            niezwłocznie po złożeniu zamówienia.</p>
+            <h2>4. Dostawa</h2>
+            <p>Podane terminy dostawy mają charakter orientacyjny. Sprzedawca nie ponosi
+            odpowiedzialności za opóźnienia wynikające z działania przewoźników lub zdarzeń
+            pozostających poza jego kontrolą. Ryzyko utraty przechodzi na Klienta z chwilą
+            przekazania towaru przewoźnikowi.</p>
+            <h2>5. Prawo do odstąpienia od umowy</h2>
+            <p>Zgodnie z obowiązującymi przepisami prawa UE, Klient będący konsumentem ma prawo
+            odstąpić od umowy w terminie 14 dni od dnia otrzymania towaru, bez podawania przyczyny.
+            W celu skorzystania z tego prawa, Klient zobowiązany jest złożyć Sprzedawcy jednoznaczne
+            oświadczenie przed upływem terminu odstąpienia.</p>
+            <h2>6. Zwroty i refundacje</h2>
+            <p>Zwracany towar musi być w oryginalnym stanie i opakowaniu. Sprzedawca zwróci środki
+            w terminie 14 dni od dnia otrzymania zwrotu lub dowodu nadania przesyłki, w zależności
+            od tego, które zdarzenie nastąpi wcześniej. Koszty odesłania ponosi Klient, chyba że
+            towar jest wadliwy.</p>
+            <h2>7. Odpowiedzialność</h2>
+            <p>Odpowiedzialność Sprzedawcy z tytułu zwykłego zaniedbania jest ograniczona do
+            typowych, przewidywalnych strat wynikających z umowy. Ograniczenie to nie dotyczy
+            szkód na osobie ani strat wynikłych z rażącego niedbalstwa lub umyślnego działania.</p>
+            <h2>8. Prawo właściwe</h2>
+            <p>Niniejszy Regulamin podlega prawu kraju, w którym Sprzedawca ma siedzibę.
+            Bezwzględnie obowiązujące przepisy ochrony konsumentów kraju zamieszkania Klienta
+            pozostają nienaruszone.</p>
+            <h2>9. Rozwiązywanie sporów</h2>
+            <p>Komisja Europejska udostępnia platformę do internetowego rozstrzygania sporów pod
+            adresem https://ec.europa.eu/consumers/odr. Jesteśmy gotowi uczestniczyć w pozasądowym
+            rozwiązywaniu sporów przed podmiotami wskazanymi przez Urząd Ochrony Konkurencji
+            i Konsumentów.</p>
+      sections:
+        00000001-bb00-4000-8000-000000000001:
+          core_type: section-text
+          width: content_width
+      tiles_order:
+        00000001-bb00-4000-8000-000000000001:
+          - 00000001-bb01-4000-8000-000000000001
+      sections_order:
+        - 00000001-bb00-4000-8000-000000000001
+    extension: null
+    meta:
+      title: "Regulamin"
+      description: "Regulamin sklepu internetowego."
+      og_title: "Regulamin"
+      og_description: "Zapoznaj się z Regulaminem przed złożeniem zamówienia."
+    created_at: 2024-01-01 00:00:00+00:00
+    updated_at: 2024-01-01 00:00:00+00:00
+    category: null
+
+# --- PL: published snapshot ---
+- model: django_contentdb.content
+  pk: 903
+  fields:
+    uid: 00000001-0004-4000-8000-000000000004
+    content:
+      tiles:
+        00000001-bb01-4000-8000-000000000001:
+          core_type: tile-txt-btn
+          title: "Regulamin"
+          description: >-
+            <h1>Regulamin sklepu internetowego</h1>
+            <p>Niniejszy Regulamin określa zasady korzystania ze sklepu internetowego oraz warunki
+            zawierania umów sprzedaży. Składając zamówienie, Klient potwierdza, że zapoznał się
+            z Regulaminem i akceptuje jego postanowienia.</p>
+            <h2>1. Postanowienia ogólne</h2>
+            <p>Regulamin stosuje się do wszystkich umów zawieranych między Sprzedawcą a Klientem za
+            pośrednictwem sklepu internetowego. Wszelkie odmienne warunki Klienta nie są uznawane,
+            chyba że Sprzedawca wyraźnie wyraził na nie pisemną zgodę.</p>
+            <h2>2. Składanie zamówień</h2>
+            <p>Prezentacja produktów w sklepie stanowi zaproszenie do złożenia oferty. Klikając
+            „Złóż zamówienie", Klient składa wiążącą ofertę zakupu wybranych produktów. Umowa
+            zostaje zawarta z chwilą wysłania przez Sprzedawcę potwierdzenia zamówienia drogą
+            elektroniczną.</p>
+            <h2>3. Ceny i płatności</h2>
+            <p>Wszystkie ceny zawierają należny podatek VAT. Sprzedawca akceptuje karty płatnicze,
+            przelew bankowy oraz inne metody płatności wskazane przy kasie. Płatność jest wymagana
+            niezwłocznie po złożeniu zamówienia.</p>
+            <h2>4. Dostawa</h2>
+            <p>Podane terminy dostawy mają charakter orientacyjny. Sprzedawca nie ponosi
+            odpowiedzialności za opóźnienia wynikające z działania przewoźników lub zdarzeń
+            pozostających poza jego kontrolą. Ryzyko utraty przechodzi na Klienta z chwilą
+            przekazania towaru przewoźnikowi.</p>
+            <h2>5. Prawo do odstąpienia od umowy</h2>
+            <p>Zgodnie z obowiązującymi przepisami prawa UE, Klient będący konsumentem ma prawo
+            odstąpić od umowy w terminie 14 dni od dnia otrzymania towaru, bez podawania przyczyny.
+            W celu skorzystania z tego prawa, Klient zobowiązany jest złożyć Sprzedawcy jednoznaczne
+            oświadczenie przed upływem terminu odstąpienia.</p>
+            <h2>6. Zwroty i refundacje</h2>
+            <p>Zwracany towar musi być w oryginalnym stanie i opakowaniu. Sprzedawca zwróci środki
+            w terminie 14 dni od dnia otrzymania zwrotu lub dowodu nadania przesyłki, w zależności
+            od tego, które zdarzenie nastąpi wcześniej. Koszty odesłania ponosi Klient, chyba że
+            towar jest wadliwy.</p>
+            <h2>7. Odpowiedzialność</h2>
+            <p>Odpowiedzialność Sprzedawcy z tytułu zwykłego zaniedbania jest ograniczona do
+            typowych, przewidywalnych strat wynikających z umowy. Ograniczenie to nie dotyczy
+            szkód na osobie ani strat wynikłych z rażącego niedbalstwa lub umyślnego działania.</p>
+            <h2>8. Prawo właściwe</h2>
+            <p>Niniejszy Regulamin podlega prawu kraju, w którym Sprzedawca ma siedzibę.
+            Bezwzględnie obowiązujące przepisy ochrony konsumentów kraju zamieszkania Klienta
+            pozostają nienaruszone.</p>
+            <h2>9. Rozwiązywanie sporów</h2>
+            <p>Komisja Europejska udostępnia platformę do internetowego rozstrzygania sporów pod
+            adresem https://ec.europa.eu/consumers/odr. Jesteśmy gotowi uczestniczyć w pozasądowym
+            rozwiązywaniu sporów przed podmiotami wskazanymi przez Urząd Ochrony Konkurencji
+            i Konsumentów.</p>
+      sections:
+        00000001-bb00-4000-8000-000000000001:
+          core_type: section-text
+          width: content_width
+      tiles_order:
+        00000001-bb00-4000-8000-000000000001:
+          - 00000001-bb01-4000-8000-000000000001
+      sections_order:
+        - 00000001-bb00-4000-8000-000000000001
+    extension: null
+    meta:
+      title: "Regulamin"
+      description: "Regulamin sklepu internetowego."
+      og_title: "Regulamin"
+      og_description: "Zapoznaj się z Regulaminem przed złożeniem zamówienia."
+    created_at: 2024-01-01 00:00:00+00:00
+    updated_at: 2024-01-01 00:00:00+00:00
+    category: null
+
+# --- DE: draft Content ---
+- model: django_contentdb.content
+  pk: 904
+  fields:
+    uid: 00000001-0005-4000-8000-000000000005
+    content:
+      tiles:
+        00000001-cc01-4000-8000-000000000001:
+          core_type: tile-txt-btn
+          title: "Allgemeine Geschäftsbedingungen"
+          description: >-
+            <h1>Allgemeine Geschäftsbedingungen (AGB)</h1>
+            <p>Diese Allgemeinen Geschäftsbedingungen regeln die Nutzung unseres Online-Shops
+            sowie den Kauf von Produkten über unsere Plattform. Mit Aufgabe einer Bestellung
+            bestätigt der Kunde, diese AGB vollständig gelesen und akzeptiert zu haben.</p>
+            <h2>1. Geltungsbereich</h2>
+            <p>Diese AGB gelten für alle Verträge, die zwischen dem Verkäufer und dem Kunden
+            über den Online-Shop geschlossen werden. Abweichende Bedingungen des Kunden werden
+            nicht anerkannt, es sei denn, der Verkäufer stimmt deren Geltung ausdrücklich
+            schriftlich zu.</p>
+            <h2>2. Bestellvorgang</h2>
+            <p>Die Darstellung von Produkten im Online-Shop stellt eine Aufforderung zur Abgabe
+            eines Angebots dar. Mit dem Klick auf „Jetzt kaufen" gibt der Kunde ein verbindliches
+            Kaufangebot ab. Der Vertrag kommt zustande, wenn der Verkäufer eine Auftragsbestätigung
+            per E-Mail versendet.</p>
+            <h2>3. Preise und Zahlung</h2>
+            <p>Alle Preise verstehen sich inklusive der gesetzlichen Mehrwertsteuer. Der Verkäufer
+            akzeptiert gängige Kredit- und Debitkarten, Banküberweisung sowie weitere an der Kasse
+            angezeigte Zahlungsmethoden. Die Zahlung ist unmittelbar bei Bestellaufgabe fällig.</p>
+            <h2>4. Lieferung</h2>
+            <p>Auf der Produktseite angegebene Lieferzeiten sind Schätzungen. Der Verkäufer haftet
+            nicht für Verzögerungen, die durch Drittanbieter oder Ereignisse außerhalb seiner
+            Kontrolle verursacht werden. Die Gefahr geht mit der Übergabe der Ware an den
+            Spediteur auf den Kunden über.</p>
+            <h2>5. Widerrufsrecht</h2>
+            <p>Gemäß dem geltenden EU-Verbraucherrecht haben Verbraucher das Recht, den Vertrag
+            innerhalb von 14 Tagen nach Erhalt der Ware ohne Angabe von Gründen zu widerrufen.
+            Zur Ausübung dieses Rechts muss der Kunde den Verkäufer vor Ablauf der Widerrufsfrist
+            durch eine eindeutige Erklärung informieren.</p>
+            <h2>6. Rückgabe und Erstattung</h2>
+            <p>Zurückgesendete Waren müssen sich im Originalzustand und in der Originalverpackung
+            befinden. Der Verkäufer erstattet den Kaufpreis innerhalb von 14 Tagen nach Eingang
+            der Rücksendung oder des Rücksendebelegs, je nachdem, was zuerst eintritt. Die
+            Rücksendekosten trägt der Kunde, sofern die Ware nicht mangelhaft ist.</p>
+            <h2>7. Haftung</h2>
+            <p>Die Haftung des Verkäufers für einfache Fahrlässigkeit ist auf vorhersehbare,
+            vertragstypische Schäden begrenzt. Diese Beschränkung gilt nicht für Ansprüche
+            wegen Verletzung von Leben, Körper oder Gesundheit sowie Schäden durch grobe
+            Fahrlässigkeit oder Vorsatz.</p>
+            <h2>8. Anwendbares Recht</h2>
+            <p>Diese AGB unterliegen dem Recht des Landes, in dem der Verkäufer seinen Sitz hat.
+            Zwingende Verbraucherschutzvorschriften des Wohnsitzlandes des Kunden bleiben
+            unberührt.</p>
+            <h2>9. Streitbeilegung</h2>
+            <p>Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung unter
+            https://ec.europa.eu/consumers/odr bereit. Wir sind nicht verpflichtet, an einem
+            Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen,
+            sind jedoch bereit, dies freiwillig zu tun.</p>
+      sections:
+        00000001-cc00-4000-8000-000000000001:
+          core_type: section-text
+          width: content_width
+      tiles_order:
+        00000001-cc00-4000-8000-000000000001:
+          - 00000001-cc01-4000-8000-000000000001
+      sections_order:
+        - 00000001-cc00-4000-8000-000000000001
+    extension: null
+    meta:
+      title: "Allgemeine Geschäftsbedingungen"
+      description: "AGB für die Nutzung unseres Online-Shops."
+      og_title: "AGB"
+      og_description: "Lesen Sie unsere AGB vor der Bestellung."
+    created_at: 2024-01-01 00:00:00+00:00
+    updated_at: 2024-01-01 00:00:00+00:00
+    category: null
+
+# --- DE: published snapshot ---
+- model: django_contentdb.content
+  pk: 905
+  fields:
+    uid: 00000001-0006-4000-8000-000000000006
+    content:
+      tiles:
+        00000001-cc01-4000-8000-000000000001:
+          core_type: tile-txt-btn
+          title: "Allgemeine Geschäftsbedingungen"
+          description: >-
+            <h1>Allgemeine Geschäftsbedingungen (AGB)</h1>
+            <p>Diese Allgemeinen Geschäftsbedingungen regeln die Nutzung unseres Online-Shops
+            sowie den Kauf von Produkten über unsere Plattform. Mit Aufgabe einer Bestellung
+            bestätigt der Kunde, diese AGB vollständig gelesen und akzeptiert zu haben.</p>
+            <h2>1. Geltungsbereich</h2>
+            <p>Diese AGB gelten für alle Verträge, die zwischen dem Verkäufer und dem Kunden
+            über den Online-Shop geschlossen werden. Abweichende Bedingungen des Kunden werden
+            nicht anerkannt, es sei denn, der Verkäufer stimmt deren Geltung ausdrücklich
+            schriftlich zu.</p>
+            <h2>2. Bestellvorgang</h2>
+            <p>Die Darstellung von Produkten im Online-Shop stellt eine Aufforderung zur Abgabe
+            eines Angebots dar. Mit dem Klick auf „Jetzt kaufen" gibt der Kunde ein verbindliches
+            Kaufangebot ab. Der Vertrag kommt zustande, wenn der Verkäufer eine Auftragsbestätigung
+            per E-Mail versendet.</p>
+            <h2>3. Preise und Zahlung</h2>
+            <p>Alle Preise verstehen sich inklusive der gesetzlichen Mehrwertsteuer. Der Verkäuufer
+            akzeptiert gängige Kredit- und Debitkarten, Banküberweisung sowie weitere an der Kasse
+            angezeigte Zahlungsmethoden. Die Zahlung ist unmittelbar bei Bestellaufgabe fällig.</p>
+            <h2>4. Lieferung</h2>
+            <p>Auf der Produktseite angegebene Lieferzeiten sind Schätzungen. Der Verkäufer haftet
+            nicht für Verzögerungen, die durch Drittanbieter oder Ereignisse außerhalb seiner
+            Kontrolle verursacht werden. Die Gefahr geht mit der Übergabe der Ware an den
+            Spediteur auf den Kunden über.</p>
+            <h2>5. Widerrufsrecht</h2>
+            <p>Gemäß dem geltenden EU-Verbraucherrecht haben Verbraucher das Recht, den Vertrag
+            innerhalb von 14 Tagen nach Erhalt der Ware ohne Angabe von Gründen zu widerrufen.
+            Zur Ausübung dieses Rechts muss der Kunde den Verkäufer vor Ablauf der Widerrufsfrist
+            durch eine eindeutige Erklärung informieren.</p>
+            <h2>6. Rückgabe und Erstattung</h2>
+            <p>Zurückgesendete Waren müssen sich im Originalzustand und in der Originalverpackung
+            befinden. Der Verkäufer erstattet den Kaufpreis innerhalb von 14 Tagen nach Eingang
+            der Rücksendung oder des Rücksendebelegs, je nachdem, was zuerst eintritt. Die
+            Rücksendekosten trägt der Kunde, sofern die Ware nicht mangelhaft ist.</p>
+            <h2>7. Haftung</h2>
+            <p>Die Haftung des Verkäufers für einfache Fahrlässigkeit ist auf vorhersehbare,
+            vertragstypische Schäden begrenzt. Diese Beschränkung gilt nicht für Ansprüche
+            wegen Verletzung von Leben, Körper oder Gesundheit sowie Schäden durch grobe
+            Fahrlässigkeit oder Vorsatz.</p>
+            <h2>8. Anwendbares Recht</h2>
+            <p>Diese AGB unterliegen dem Recht des Landes, in dem der Verkäufer seinen Sitz hat.
+            Zwingende Verbraucherschutzvorschriften des Wohnsitzlandes des Kunden bleiben
+            unberührt.</p>
+            <h2>9. Streitbeilegung</h2>
+            <p>Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung unter
+            https://ec.europa.eu/consumers/odr bereit. Wir sind nicht verpflichtet, an einem
+            Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen,
+            sind jedoch bereit, dies freiwillig zu tun.</p>
+      sections:
+        00000001-cc00-4000-8000-000000000001:
+          core_type: section-text
+          width: content_width
+      tiles_order:
+        00000001-cc00-4000-8000-000000000001:
+          - 00000001-cc01-4000-8000-000000000001
+      sections_order:
+        - 00000001-cc00-4000-8000-000000000001
+    extension: null
+    meta:
+      title: "Allgemeine Geschäftsbedingungen"
+      description: "AGB für die Nutzung unseres Online-Shops."
+      og_title: "AGB"
+      og_description: "Lesen Sie unsere AGB vor der Bestellung."
+    created_at: 2024-01-01 00:00:00+00:00
+    updated_at: 2024-01-01 00:00:00+00:00
+    category: null
+
+# =============================================================================
+# PRIVACY POLICY
+# =============================================================================
+
+# --- EN: draft Content ---
+- model: django_contentdb.content
+  pk: 906
+  fields:
+    uid: 00000002-0001-4000-8000-000000000001
+    content:
+      tiles:
+        00000002-aa01-4000-8000-000000000001:
+          core_type: tile-txt-btn
+          title: "Privacy Policy"
+          description: >-
+            <h1>Privacy Policy</h1>
+            <p>This Privacy Policy explains how we collect, use, and protect your personal data
+            when you use our online store. We are committed to handling your data in accordance
+            with the EU General Data Protection Regulation (GDPR) and applicable national law.</p>
+            <h2>1. Data Controller</h2>
+            <p>The data controller responsible for the processing of your personal data is the
+            Seller as identified in the Legal Notice section of this website. You may contact us
+            at the email address provided there for any data protection enquiries.</p>
+            <h2>2. Data We Collect</h2>
+            <p>We collect data you provide directly (name, email address, delivery address, payment
+            information), data generated by your use of our store (browsing behaviour, order history),
+            and technical data (IP address, browser type, device identifiers) collected automatically
+            via cookies and similar technologies.</p>
+            <h2>3. Purpose and Legal Basis</h2>
+            <p>We process your data to fulfil your orders and deliver products (Art. 6(1)(b) GDPR),
+            to comply with our legal obligations such as invoicing and tax records (Art. 6(1)(c) GDPR),
+            to pursue our legitimate interests in fraud prevention and store improvement
+            (Art. 6(1)(f) GDPR), and — where you have given consent — to send you marketing
+            communications (Art. 6(1)(a) GDPR).</p>
+            <h2>4. Your Rights</h2>
+            <p>You have the right to access, rectify, erase, restrict, or port your personal data,
+            and to object to certain processing activities. Where processing is based on consent,
+            you may withdraw that consent at any time without affecting the lawfulness of prior
+            processing. To exercise these rights, contact us at the address in the Legal Notice.</p>
+            <h2>5. Cookies</h2>
+            <p>We use strictly necessary cookies to operate the store, functional cookies to remember
+            your preferences, and — with your consent — analytics and marketing cookies. You can manage
+            cookie settings at any time via the cookie banner or your browser settings.</p>
+            <h2>6. Data Retention</h2>
+            <p>We retain your order data for the period required by applicable commercial and tax law
+            (typically 5–10 years). Marketing consent records are kept for as long as the consent is
+            active plus the statutory limitation period. Account data is deleted within 30 days of
+            account closure, unless retention is legally required.</p>
+            <h2>7. Data Sharing</h2>
+            <p>We share your data with payment processors, logistics providers, and cloud hosting
+            providers strictly to the extent necessary to deliver our services. We do not sell your
+            personal data to third parties. Where recipients are located outside the EEA, we ensure
+            appropriate safeguards are in place (e.g., Standard Contractual Clauses).</p>
+            <h2>8. Supervisory Authority</h2>
+            <p>You have the right to lodge a complaint with the data protection supervisory authority
+            in your country of residence. A list of national authorities is available on the European
+            Data Protection Board website at https://edpb.europa.eu.</p>
+      sections:
+        00000002-aa00-4000-8000-000000000001:
+          core_type: section-text
+          width: content_width
+      tiles_order:
+        00000002-aa00-4000-8000-000000000001:
+          - 00000002-aa01-4000-8000-000000000001
+      sections_order:
+        - 00000002-aa00-4000-8000-000000000001
+    extension: null
+    meta:
+      title: "Privacy Policy"
+      description: "How we collect, use, and protect your personal data (GDPR)."
+      og_title: "Privacy Policy"
+      og_description: "Your data rights and how we handle personal information."
+    created_at: 2024-01-01 00:00:00+00:00
+    updated_at: 2024-01-01 00:00:00+00:00
+    category: null
+
+# --- EN: published snapshot ---
+- model: django_contentdb.content
+  pk: 907
+  fields:
+    uid: 00000002-0002-4000-8000-000000000002
+    content:
+      tiles:
+        00000002-aa01-4000-8000-000000000001:
+          core_type: tile-txt-btn
+          title: "Privacy Policy"
+          description: >-
+            <h1>Privacy Policy</h1>
+            <p>This Privacy Policy explains how we collect, use, and protect your personal data
+            when you use our online store. We are committed to handling your data in accordance
+            with the EU General Data Protection Regulation (GDPR) and applicable national law.</p>
+            <h2>1. Data Controller</h2>
+            <p>The data controller responsible for the processing of your personal data is the
+            Seller as identified in the Legal Notice section of this website. You may contact us
+            at the email address provided there for any data protection enquiries.</p>
+            <h2>2. Data We Collect</h2>
+            <p>We collect data you provide directly (name, email address, delivery address, payment
+            information), data generated by your use of our store (browsing behaviour, order history),
+            and technical data (IP address, browser type, device identifiers) collected automatically
+            via cookies and similar technologies.</p>
+            <h2>3. Purpose and Legal Basis</h2>
+            <p>We process your data to fulfil your orders and deliver products (Art. 6(1)(b) GDPR),
+            to comply with our legal obligations such as invoicing and tax records (Art. 6(1)(c) GDPR),
+            to pursue our legitimate interests in fraud prevention and store improvement
+            (Art. 6(1)(f) GDPR), and — where you have given consent — to send you marketing
+            communications (Art. 6(1)(a) GDPR).</p>
+            <h2>4. Your Rights</h2>
+            <p>You have the right to access, rectify, erase, restrict, or port your personal data,
+            and to object to certain processing activities. Where processing is based on consent,
+            you may withdraw that consent at any time without affecting the lawfulness of prior
+            processing. To exercise these rights, contact us at the address in the Legal Notice.</p>
+            <h2>5. Cookies</h2>
+            <p>We use strictly necessary cookies to operate the store, functional cookies to remember
+            your preferences, and — with your consent — analytics and marketing cookies. You can manage
+            cookie settings at any time via the cookie banner or your browser settings.</p>
+            <h2>6. Data Retention</h2>
+            <p>We retain your order data for the period required by applicable commercial and tax law
+            (typically 5–10 years). Marketing consent records are kept for as long as the consent is
+            active plus the statutory limitation period. Account data is deleted within 30 days of
+            account closure, unless retention is legally required.</p>
+            <h2>7. Data Sharing</h2>
+            <p>We share your data with payment processors, logistics providers, and cloud hosting
+            providers strictly to the extent necessary to deliver our services. We do not sell your
+            personal data to third parties. Where recipients are located outside the EEA, we ensure
+            appropriate safeguards are in place (e.g., Standard Contractual Clauses).</p>
+            <h2>8. Supervisory Authority</h2>
+            <p>You have the right to lodge a complaint with the data protection supervisory authority
+            in your country of residence. A list of national authorities is available on the European
+            Data Protection Board website at https://edpb.europa.eu.</p>
+      sections:
+        00000002-aa00-4000-8000-000000000001:
+          core_type: section-text
+          width: content_width
+      tiles_order:
+        00000002-aa00-4000-8000-000000000001:
+          - 00000002-aa01-4000-8000-000000000001
+      sections_order:
+        - 00000002-aa00-4000-8000-000000000001
+    extension: null
+    meta:
+      title: "Privacy Policy"
+      description: "How we collect, use, and protect your personal data (GDPR)."
+      og_title: "Privacy Policy"
+      og_description: "Your data rights and how we handle personal information."
+    created_at: 2024-01-01 00:00:00+00:00
+    updated_at: 2024-01-01 00:00:00+00:00
+    category: null
+
+# --- PL: draft Content ---
+- model: django_contentdb.content
+  pk: 908
+  fields:
+    uid: 00000002-0003-4000-8000-000000000003
+    content:
+      tiles:
+        00000002-bb01-4000-8000-000000000001:
+          core_type: tile-txt-btn
+          title: "Polityka prywatności"
+          description: >-
+            <h1>Polityka prywatności</h1>
+            <p>Niniejsza Polityka prywatności wyjaśnia, w jaki sposób zbieramy, wykorzystujemy
+            i chronimy Twoje dane osobowe podczas korzystania z naszego sklepu internetowego.
+            Przetwarzamy dane zgodnie z Rozporządzeniem Parlamentu Europejskiego i Rady (UE) 2016/679
+            (RODO) oraz obowiązującymi przepisami krajowymi.</p>
+            <h2>1. Administrator danych</h2>
+            <p>Administratorem danych osobowych jest Sprzedawca wskazany w stopce prawnej tej witryny.
+            W sprawach dotyczących ochrony danych prosimy o kontakt pod adresem e-mail wskazanym
+            w stopce.</p>
+            <h2>2. Zakres zbieranych danych</h2>
+            <p>Zbieramy dane podawane przez Ciebie bezpośrednio (imię i nazwisko, adres e-mail,
+            adres dostawy, dane płatnicze), dane generowane w trakcie korzystania ze sklepu
+            (historia zamówień, zachowanie przeglądania) oraz dane techniczne (adres IP, typ
+            przeglądarki, identyfikatory urządzeń) zbierane automatycznie przez pliki cookie
+            i podobne technologie.</p>
+            <h2>3. Cel i podstawa prawna przetwarzania</h2>
+            <p>Przetwarzamy Twoje dane w celu realizacji zamówień i dostarczenia produktów
+            (art. 6 ust. 1 lit. b RODO), wypełnienia obowiązków prawnych, takich jak wystawianie
+            faktur i prowadzenie dokumentacji podatkowej (art. 6 ust. 1 lit. c RODO), realizacji
+            uzasadnionych interesów w zakresie zapobiegania oszustwom i ulepszania sklepu
+            (art. 6 ust. 1 lit. f RODO) oraz — za Twoją zgodą — przesyłania komunikacji
+            marketingowej (art. 6 ust. 1 lit. a RODO).</p>
+            <h2>4. Twoje prawa</h2>
+            <p>Masz prawo do dostępu do danych, ich sprostowania, usunięcia, ograniczenia
+            przetwarzania, przenoszenia oraz wniesienia sprzeciwu wobec przetwarzania. W przypadku,
+            gdy przetwarzanie odbywa się na podstawie zgody, możesz ją wycofać w dowolnym momencie,
+            bez wpływu na zgodność z prawem przetwarzania dokonanego przed jej wycofaniem.
+            Aby skorzystać z praw, skontaktuj się z nami pod adresem wskazanym w stopce.</p>
+            <h2>5. Pliki cookie</h2>
+            <p>Używamy niezbędnych plików cookie do działania sklepu, funkcjonalnych do zapamiętywania
+            Twoich preferencji oraz — za Twoją zgodą — analitycznych i marketingowych. Ustawieniami
+            plików cookie możesz zarządzać w dowolnym momencie za pomocą bannera cookie lub ustawień
+            przeglądarki.</p>
+            <h2>6. Okres przechowywania danych</h2>
+            <p>Dane dotyczące zamówień przechowujemy przez okres wymagany przepisami prawa handlowego
+            i podatkowego (zazwyczaj 5–10 lat). Zapisy zgód marketingowych są przechowywane przez czas
+            obowiązywania zgody oraz przez okres przedawnienia roszczeń. Dane konta są usuwane w ciągu
+            30 dni od jego zamknięcia, chyba że obowiązek przechowywania wynika z przepisów prawa.</p>
+            <h2>7. Udostępnianie danych</h2>
+            <p>Udostępniamy Twoje dane procesorom płatności, dostawcom usług logistycznych oraz
+            dostawcom usług hostingowych wyłącznie w zakresie niezbędnym do świadczenia usług.
+            Nie sprzedajemy danych osobowych stronom trzecim. W przypadku odbiorców spoza EOG
+            zapewniamy odpowiednie zabezpieczenia, np. Standardowe Klauzule Umowne.</p>
+            <h2>8. Organ nadzorczy</h2>
+            <p>Masz prawo wniesienia skargi do Prezesa Urzędu Ochrony Danych Osobowych (UODO)
+            z siedzibą przy ul. Stawki 2, 00-193 Warszawa. Więcej informacji na stronie
+            https://uodo.gov.pl.</p>
+      sections:
+        00000002-bb00-4000-8000-000000000001:
+          core_type: section-text
+          width: content_width
+      tiles_order:
+        00000002-bb00-4000-8000-000000000001:
+          - 00000002-bb01-4000-8000-000000000001
+      sections_order:
+        - 00000002-bb00-4000-8000-000000000001
+    extension: null
+    meta:
+      title: "Polityka prywatności"
+      description: "Jak zbieramy, wykorzystujemy i chronimy Twoje dane osobowe (RODO)."
+      og_title: "Polityka prywatności"
+      og_description: "Twoje prawa i sposób przetwarzania danych osobowych."
+    created_at: 2024-01-01 00:00:00+00:00
+    updated_at: 2024-01-01 00:00:00+00:00
+    category: null
+
+# --- PL: published snapshot ---
+- model: django_contentdb.content
+  pk: 909
+  fields:
+    uid: 00000002-0004-4000-8000-000000000004
+    content:
+      tiles:
+        00000002-bb01-4000-8000-000000000001:
+          core_type: tile-txt-btn
+          title: "Polityka prywatności"
+          description: >-
+            <h1>Polityka prywatności</h1>
+            <p>Niniejsza Polityka prywatności wyjaśnia, w jaki sposób zbieramy, wykorzystujemy
+            i chronimy Twoje dane osobowe podczas korzystania z naszego sklepu internetowego.
+            Przetwarzamy dane zgodnie z Rozporządzeniem Parlamentu Europejskiego i Rady (UE) 2016/679
+            (RODO) oraz obowiązującymi przepisami krajowymi.</p>
+            <h2>1. Administrator danych</h2>
+            <p>Administratorem danych osobowych jest Sprzedawca wskazany w stopce prawnej tej witryny.
+            W sprawach dotyczących ochrony danych prosimy o kontakt pod adresem e-mail wskazanym
+            w stopce.</p>
+            <h2>2. Zakres zbieranych danych</h2>
+            <p>Zbieramy dane podawane przez Ciebie bezpośrednio (imię i nazwisko, adres e-mail,
+            adres dostawy, dane płatnicze), dane generowane w trakcie korzystania ze sklepu
+            (historia zamówień, zachowanie przeglądania) oraz dane techniczne (adres IP, typ
+            przeglądarki, identyfikatory urządzeń) zbierane automatycznie przez pliki cookie
+            i podobne technologie.</p>
+            <h2>3. Cel i podstawa prawna przetwarzania</h2>
+            <p>Przetwarzamy Twoje dane w celu realizacji zamówień i dostarczenia produktów
+            (art. 6 ust. 1 lit. b RODO), wypełnienia obowiązków prawnych, takich jak wystawianie
+            faktur i prowadzenie dokumentacji podatkowej (art. 6 ust. 1 lit. c RODO), realizacji
+            uzasadnionych interesów w zakresie zapobiegania oszustwom i ulepszania sklepu
+            (art. 6 ust. 1 lit. f RODO) oraz — za Twoją zgodą — przesyłania komunikacji
+            marketingowej (art. 6 ust. 1 lit. a RODO).</p>
+            <h2>4. Twoje prawa</h2>
+            <p>Masz prawo do dostępu do danych, ich sprostowania, usunięcia, ograniczenia
+            przetwarzania, przenoszenia oraz wniesienia sprzeciwu wobec przetwarzania. W przypadku,
+            gdy przetwarzanie odbywa się na podstawie zgody, możesz ją wycofać w dowolnym momencie,
+            bez wpływu na zgodność z prawem przetwarzania dokonanego przed jej wycofaniem.
+            Aby skorzystać z praw, skontaktuj się z nami pod adresem wskazanym w stopce.</p>
+            <h2>5. Pliki cookie</h2>
+            <p>Używamy niezbędnych plików cookie do działania sklepu, funkcjonalnych do zapamiętywania
+            Twoich preferencji oraz — za Twoją zgodą — analitycznych i marketingowych. Ustawieniami
+            plików cookie możesz zarządzać w dowolnym momencie za pomocą bannera cookie lub ustawień
+            przeglądarki.</p>
+            <h2>6. Okres przechowywania danych</h2>
+            <p>Dane dotyczące zamówień przechowujemy przez okres wymagany przepisami prawa handlowego
+            i podatkowego (zazwyczaj 5–10 lat). Zapisy zgód marketingowych są przechowywane przez czas
+            obowiązywania zgody oraz przez okres przedawnienia roszczeń. Dane konta są usuwane w ciągu
+            30 dni od jego zamknięcia, chyba że obowiązek przechowywania wynika z przepisów prawa.</p>
+            <h2>7. Udostępnianie danych</h2>
+            <p>Udostępniamy Twoje dane procesorom płatności, dostawcom usług logistycznych oraz
+            dostawcom usług hostingowych wyłącznie w zakresie niezbędnym do świadczenia usług.
+            Nie sprzedajemy danych osobowych stronom trzecim. W przypadku odbiorców spoza EOG
+            zapewniamy odpowiednie zabezpieczenia, np. Standardowe Klauzule Umowne.</p>
+            <h2>8. Organ nadzorczy</h2>
+            <p>Masz prawo wniesienia skargi do Prezesa Urzędu Ochrony Danych Osobowych (UODO)
+            z siedzibą przy ul. Stawki 2, 00-193 Warszawa. Więcej informacji na stronie
+            https://uodo.gov.pl.</p>
+      sections:
+        00000002-bb00-4000-8000-000000000001:
+          core_type: section-text
+          width: content_width
+      tiles_order:
+        00000002-bb00-4000-8000-000000000001:
+          - 00000002-bb01-4000-8000-000000000001
+      sections_order:
+        - 00000002-bb00-4000-8000-000000000001
+    extension: null
+    meta:
+      title: "Polityka prywatności"
+      description: "Jak zbieramy, wykorzystujemy i chronimy Twoje dane osobowe (RODO)."
+      og_title: "Polityka prywatności"
+      og_description: "Twoje prawa i sposób przetwarzania danych osobowych."
+    created_at: 2024-01-01 00:00:00+00:00
+    updated_at: 2024-01-01 00:00:00+00:00
+    category: null
+
+# --- DE: draft Content ---
+- model: django_contentdb.content
+  pk: 910
+  fields:
+    uid: 00000002-0005-4000-8000-000000000005
+    content:
+      tiles:
+        00000002-cc01-4000-8000-000000000001:
+          core_type: tile-txt-btn
+          title: "Datenschutzerklärung"
+          description: >-
+            <h1>Datenschutzerklärung</h1>
+            <p>Diese Datenschutzerklärung erläutert, wie wir Ihre personenbezogenen Daten erfassen,
+            verwenden und schützen, wenn Sie unseren Online-Shop nutzen. Wir verarbeiten Ihre Daten
+            gemäß der EU-Datenschutz-Grundverordnung (DSGVO) und dem anwendbaren nationalen Recht.</p>
+            <h2>1. Verantwortlicher</h2>
+            <p>Verantwortlicher für die Verarbeitung Ihrer personenbezogenen Daten ist der Verkäufer,
+            der im Impressum dieser Website angegeben ist. Datenschutzbezogene Anfragen richten Sie
+            bitte an die dort angegebene E-Mail-Adresse.</p>
+            <h2>2. Erhobene Daten</h2>
+            <p>Wir erfassen Daten, die Sie uns direkt mitteilen (Name, E-Mail-Adresse, Lieferadresse,
+            Zahlungsinformationen), Daten, die durch Ihre Nutzung des Shops entstehen (Bestellhistorie,
+            Surfverhalten) sowie technische Daten (IP-Adresse, Browsertyp, Gerätekennungen), die
+            automatisch über Cookies und ähnliche Technologien gesammelt werden.</p>
+            <h2>3. Zweck und Rechtsgrundlage</h2>
+            <p>Wir verarbeiten Ihre Daten zur Vertragserfüllung (Art. 6 Abs. 1 lit. b DSGVO),
+            zur Erfüllung rechtlicher Verpflichtungen wie Rechnungsstellung und Steueraufzeichnungen
+            (Art. 6 Abs. 1 lit. c DSGVO), zur Wahrung unserer berechtigten Interessen an der
+            Betrugsprävention und Shop-Verbesserung (Art. 6 Abs. 1 lit. f DSGVO) sowie — mit Ihrer
+            Einwilligung — zur Zusendung von Marketingmitteilungen (Art. 6 Abs. 1 lit. a DSGVO).</p>
+            <h2>4. Ihre Rechte</h2>
+            <p>Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der
+            Verarbeitung, Datenübertragbarkeit und Widerspruch. Soweit die Verarbeitung auf Ihrer
+            Einwilligung beruht, können Sie diese jederzeit mit Wirkung für die Zukunft widerrufen.
+            Zur Ausübung Ihrer Rechte wenden Sie sich an die im Impressum angegebene Adresse.</p>
+            <h2>5. Cookies</h2>
+            <p>Wir verwenden technisch notwendige Cookies zum Betrieb des Shops, funktionale Cookies
+            zur Speicherung Ihrer Einstellungen sowie — mit Ihrer Einwilligung — Analyse- und
+            Marketing-Cookies. Sie können Ihre Cookie-Einstellungen jederzeit über das Cookie-Banner
+            oder Ihre Browsereinstellungen verwalten.</p>
+            <h2>6. Speicherdauer</h2>
+            <p>Bestelldaten speichern wir für den gesetzlich vorgeschriebenen Zeitraum nach
+            Handels- und Steuerrecht (in der Regel 5–10 Jahre). Einwilligungsnachweise für
+            Marketingzwecke werden für die Dauer der Einwilligung zuzüglich der gesetzlichen
+            Verjährungsfrist aufbewahrt. Kontodaten werden innerhalb von 30 Tagen nach Schließung
+            des Kontos gelöscht, sofern keine gesetzliche Aufbewahrungspflicht besteht.</p>
+            <h2>7. Datenweitergabe</h2>
+            <p>Wir geben Ihre Daten an Zahlungsdienstleister, Logistikdienstleister und
+            Cloud-Hosting-Anbieter weiter, soweit dies zur Leistungserbringung erforderlich ist.
+            Wir verkaufen Ihre personenbezogenen Daten nicht an Dritte. Bei Empfängern außerhalb
+            des EWR stellen wir geeignete Garantien sicher, z. B. Standardvertragsklauseln.</p>
+            <h2>8. Aufsichtsbehörde</h2>
+            <p>Sie haben das Recht, bei der für Sie zuständigen Datenschutzaufsichtsbehörde Beschwerde
+            einzulegen. Eine Übersicht der nationalen Behörden finden Sie auf der Website des
+            Europäischen Datenschutzausschusses unter https://edpb.europa.eu.</p>
+      sections:
+        00000002-cc00-4000-8000-000000000001:
+          core_type: section-text
+          width: content_width
+      tiles_order:
+        00000002-cc00-4000-8000-000000000001:
+          - 00000002-cc01-4000-8000-000000000001
+      sections_order:
+        - 00000002-cc00-4000-8000-000000000001
+    extension: null
+    meta:
+      title: "Datenschutzerklärung"
+      description: "Datenschutzerklärung gemäß DSGVO."
+      og_title: "Datenschutzerklärung"
+      og_description: "Ihre Datenschutzrechte und wie wir Ihre Daten verarbeiten."
+    created_at: 2024-01-01 00:00:00+00:00
+    updated_at: 2024-01-01 00:00:00+00:00
+    category: null
+
+# --- DE: published snapshot ---
+- model: django_contentdb.content
+  pk: 911
+  fields:
+    uid: 00000002-0006-4000-8000-000000000006
+    content:
+      tiles:
+        00000002-cc01-4000-8000-000000000001:
+          core_type: tile-txt-btn
+          title: "Datenschutzerklärung"
+          description: >-
+            <h1>Datenschutzerklärung</h1>
+            <p>Diese Datenschutzerklärung erläutert, wie wir Ihre personenbezogenen Daten erfassen,
+            verwenden und schützen, wenn Sie unseren Online-Shop nutzen. Wir verarbeiten Ihre Daten
+            gemäß der EU-Datenschutz-Grundverordnung (DSGVO) und dem anwendbaren nationalen Recht.</p>
+            <h2>1. Verantwortlicher</h2>
+            <p>Verantwortlicher für die Verarbeitung Ihrer personenbezogenen Daten ist der Verkäufer,
+            der im Impressum dieser Website angegeben ist. Datenschutzbezogene Anfragen richten Sie
+            bitte an die dort angegebene E-Mail-Adresse.</p>
+            <h2>2. Erhobene Daten</h2>
+            <p>Wir erfassen Daten, die Sie uns direkt mitteilen (Name, E-Mail-Adresse, Lieferadresse,
+            Zahlungsinformationen), Daten, die durch Ihre Nutzung des Shops entstehen (Bestellhistorie,
+            Surfverhalten) sowie technische Daten (IP-Adresse, Browsertyp, Gerätekennungen), die
+            automatisch über Cookies und ähnliche Technologien gesammelt werden.</p>
+            <h2>3. Zweck und Rechtsgrundlage</h2>
+            <p>Wir verarbeiten Ihre Daten zur Vertragserfüllung (Art. 6 Abs. 1 lit. b DSGVO),
+            zur Erfüllung rechtlicher Verpflichtungen wie Rechnungsstellung und Steueraufzeichnungen
+            (Art. 6 Abs. 1 lit. c DSGVO), zur Wahrung unserer berechtigten Interessen an der
+            Betrugsprävention und Shop-Verbesserung (Art. 6 Abs. 1 lit. f DSGVO) sowie — mit Ihrer
+            Einwilligung — zur Zusendung von Marketingmitteilungen (Art. 6 Abs. 1 lit. a DSGVO).</p>
+            <h2>4. Ihre Rechte</h2>
+            <p>Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der
+            Verarbeitung, Datenübertragbarkeit und Widerspruch. Soweit die Verarbeitung auf Ihrer
+            Einwilligung beruht, können Sie diese jederzeit mit Wirkung für die Zukunft widerrufen.
+            Zur Ausübung Ihrer Rechte wenden Sie sich an die im Impressum angegebene Adresse.</p>
+            <h2>5. Cookies</h2>
+            <p>Wir verwenden technisch notwendige Cookies zum Betrieb des Shops, funktionale Cookies
+            zur Speicherung Ihrer Einstellungen sowie — mit Ihrer Einwilligung — Analyse- und
+            Marketing-Cookies. Sie können Ihre Cookie-Einstellungen jederzeit über das Cookie-Banner
+            oder Ihre Browsereinstellungen verwalten.</p>
+            <h2>6. Speicherdauer</h2>
+            <p>Bestelldaten speichern wir für den gesetzlich vorgeschriebenen Zeitraum nach
+            Handels- und Steuerrecht (in der Regel 5–10 Jahre). Einwilligungsnachweise für
+            Marketingzwecke werden für die Dauer der Einwilligung zuzüglich der gesetzlichen
+            Verjährungsfrist aufbewahrt. Kontodaten werden innerhalb von 30 Tagen nach Schließung
+            des Kontos gelöscht, sofern keine gesetzliche Aufbewahrungspflicht besteht.</p>
+            <h2>7. Datenweitergabe</h2>
+            <p>Wir geben Ihre Daten an Zahlungsdienstleister, Logistikdienstleister und
+            Cloud-Hosting-Anbieter weiter, soweit dies zur Leistungserbringung erforderlich ist.
+            Wir verkaufen Ihre personenbezogenen Daten nicht an Dritte. Bei Empfängern außerhalb
+            des EWR stellen wir geeignete Garantien sicher, z. B. Standardvertragsklauseln.</p>
+            <h2>8. Aufsichtsbehörde</h2>
+            <p>Sie haben das Recht, bei der für Sie zuständigen Datenschutzaufsichtsbehörde Beschwerde
+            einzulegen. Eine Übersicht der nationalen Behörden finden Sie auf der Website des
+            Europäischen Datenschutzausschusses unter https://edpb.europa.eu.</p>
+      sections:
+        00000002-cc00-4000-8000-000000000001:
+          core_type: section-text
+          width: content_width
+      tiles_order:
+        00000002-cc00-4000-8000-000000000001:
+          - 00000002-cc01-4000-8000-000000000001
+      sections_order:
+        - 00000002-cc00-4000-8000-000000000001
+    extension: null
+    meta:
+      title: "Datenschutzerklärung"
+      description: "Datenschutzerklärung gemäß DSGVO."
+      og_title: "Datenschutzerklärung"
+      og_description: "Ihre Datenschutzrechte und wie wir Ihre Daten verarbeiten."
+    created_at: 2024-01-01 00:00:00+00:00
+    updated_at: 2024-01-01 00:00:00+00:00
+    category: null
+
+# =============================================================================
+# NEWSLETTER POLICY
+# =============================================================================
+
+# --- EN: draft Content ---
+- model: django_contentdb.content
+  pk: 912
+  fields:
+    uid: 00000003-0001-4000-8000-000000000001
+    content:
+      tiles:
+        00000003-aa01-4000-8000-000000000001:
+          core_type: tile-txt-btn
+          title: "Newsletter Policy"
+          description: >-
+            <h1>Newsletter Policy</h1>
+            <p>This Newsletter Policy describes what you can expect when you subscribe to our
+            newsletter, how your data is used, and how you can manage or withdraw your subscription
+            at any time.</p>
+            <h2>1. What You Will Receive</h2>
+            <p>By subscribing to our newsletter you will receive commercial communications including
+            new product announcements, promotional offers, curated editorial content, and store news.
+            We aim to send newsletters that are relevant to your interests and purchase history.</p>
+            <h2>2. Sending Frequency</h2>
+            <p>We send newsletters regularly, typically between two and four times per month. During
+            promotional periods or major product launches the frequency may be higher. We will not
+            send more than one email per day without prior notice.</p>
+            <h2>3. Consent and Double Opt-In</h2>
+            <p>Your subscription is voluntary and based on your explicit consent. We use a double
+            opt-in process: after entering your email address you will receive a confirmation email.
+            Your subscription is activated only after you click the confirmation link. This protects
+            you against unauthorised sign-ups.</p>
+            <h2>4. How to Unsubscribe</h2>
+            <p>You may unsubscribe from our newsletter at any time and without giving any reason.
+            Every newsletter contains an unsubscribe link at the bottom. You may also withdraw your
+            consent via your account settings or by contacting us directly. Unsubscribe requests are
+            processed immediately and take effect within 24 hours.</p>
+            <h2>5. Data Processing</h2>
+            <p>We process your email address and — if provided — your name and preferences to send
+            you personalised newsletters. We may use your order history to tailor content to your
+            interests. The legal basis for this processing is your consent (Art. 6(1)(a) GDPR).
+            Your data will not be shared with third parties for their own marketing purposes.</p>
+            <h2>6. Data Retention</h2>
+            <p>We retain your email address for newsletter purposes for as long as your subscription
+            is active. After unsubscribing we keep a record of your consent and withdrawal for the
+            statutory limitation period as required for compliance and dispute resolution purposes.
+            The email address itself is removed from our active mailing list within 24 hours of
+            unsubscribing.</p>
+            <h2>7. Service Providers</h2>
+            <p>We use third-party email service providers to send our newsletters. These providers
+            act as data processors under data processing agreements and are contractually prohibited
+            from using your data for their own purposes.</p>
+      sections:
+        00000003-aa00-4000-8000-000000000001:
+          core_type: section-text
+          width: content_width
+      tiles_order:
+        00000003-aa00-4000-8000-000000000001:
+          - 00000003-aa01-4000-8000-000000000001
+      sections_order:
+        - 00000003-aa00-4000-8000-000000000001
+    extension: null
+    meta:
+      title: "Newsletter Policy"
+      description: "What to expect from our newsletter and how to manage your subscription."
+      og_title: "Newsletter Policy"
+      og_description: "Subscription terms, frequency, and how to unsubscribe."
+    created_at: 2024-01-01 00:00:00+00:00
+    updated_at: 2024-01-01 00:00:00+00:00
+    category: null
+
+# --- EN: published snapshot ---
+- model: django_contentdb.content
+  pk: 913
+  fields:
+    uid: 00000003-0002-4000-8000-000000000002
+    content:
+      tiles:
+        00000003-aa01-4000-8000-000000000001:
+          core_type: tile-txt-btn
+          title: "Newsletter Policy"
+          description: >-
+            <h1>Newsletter Policy</h1>
+            <p>This Newsletter Policy describes what you can expect when you subscribe to our
+            newsletter, how your data is used, and how you can manage or withdraw your subscription
+            at any time.</p>
+            <h2>1. What You Will Receive</h2>
+            <p>By subscribing to our newsletter you will receive commercial communications including
+            new product announcements, promotional offers, curated editorial content, and store news.
+            We aim to send newsletters that are relevant to your interests and purchase history.</p>
+            <h2>2. Sending Frequency</h2>
+            <p>We send newsletters regularly, typically between two and four times per month. During
+            promotional periods or major product launches the frequency may be higher. We will not
+            send more than one email per day without prior notice.</p>
+            <h2>3. Consent and Double Opt-In</h2>
+            <p>Your subscription is voluntary and based on your explicit consent. We use a double
+            opt-in process: after entering your email address you will receive a confirmation email.
+            Your subscription is activated only after you click the confirmation link. This protects
+            you against unauthorised sign-ups.</p>
+            <h2>4. How to Unsubscribe</h2>
+            <p>You may unsubscribe from our newsletter at any time and without giving any reason.
+            Every newsletter contains an unsubscribe link at the bottom. You may also withdraw your
+            consent via your account settings or by contacting us directly. Unsubscribe requests are
+            processed immediately and take effect within 24 hours.</p>
+            <h2>5. Data Processing</h2>
+            <p>We process your email address and — if provided — your name and preferences to send
+            you personalised newsletters. We may use your order history to tailor content to your
+            interests. The legal basis for this processing is your consent (Art. 6(1)(a) GDPR).
+            Your data will not be shared with third parties for their own marketing purposes.</p>
+            <h2>6. Data Retention</h2>
+            <p>We retain your email address for newsletter purposes for as long as your subscription
+            is active. After unsubscribing we keep a record of your consent and withdrawal for the
+            statutory limitation period as required for compliance and dispute resolution purposes.
+            The email address itself is removed from our active mailing list within 24 hours of
+            unsubscribing.</p>
+            <h2>7. Service Providers</h2>
+            <p>We use third-party email service providers to send our newsletters. These providers
+            act as data processors under data processing agreements and are contractually prohibited
+            from using your data for their own purposes.</p>
+      sections:
+        00000003-aa00-4000-8000-000000000001:
+          core_type: section-text
+          width: content_width
+      tiles_order:
+        00000003-aa00-4000-8000-000000000001:
+          - 00000003-aa01-4000-8000-000000000001
+      sections_order:
+        - 00000003-aa00-4000-8000-000000000001
+    extension: null
+    meta:
+      title: "Newsletter Policy"
+      description: "What to expect from our newsletter and how to manage your subscription."
+      og_title: "Newsletter Policy"
+      og_description: "Subscription terms, frequency, and how to unsubscribe."
+    created_at: 2024-01-01 00:00:00+00:00
+    updated_at: 2024-01-01 00:00:00+00:00
+    category: null
+
+# --- PL: draft Content ---
+- model: django_contentdb.content
+  pk: 914
+  fields:
+    uid: 00000003-0003-4000-8000-000000000003
+    content:
+      tiles:
+        00000003-bb01-4000-8000-000000000001:
+          core_type: tile-txt-btn
+          title: "Polityka newslettera"
+          description: >-
+            <h1>Polityka newslettera</h1>
+            <p>Niniejsza Polityka newslettera opisuje, czego możesz oczekiwać po zapisaniu się
+            do naszego newslettera, w jaki sposób przetwarzamy Twoje dane oraz jak w dowolnym
+            momencie możesz zarządzać lub wycofać subskrypcję.</p>
+            <h2>1. Co będziesz otrzymywać</h2>
+            <p>Subskrybując nasz newsletter, będziesz otrzymywać komunikaty handlowe, w tym
+            informacje o nowych produktach, oferty promocyjne, treści redakcyjne oraz aktualności
+            ze sklepu. Staramy się, aby nasze newslettery były dopasowane do Twoich zainteresowań
+            i historii zakupów.</p>
+            <h2>2. Częstotliwość wysyłki</h2>
+            <p>Wysyłamy newslettery regularnie, zazwyczaj od dwóch do czterech razy w miesiącu.
+            W okresach promocyjnych lub przy ważnych premierach produktów częstotliwość może być
+            wyższa. Nie wyślemy więcej niż jednej wiadomości dziennie bez uprzedniego powiadomienia.</p>
+            <h2>3. Zgoda i double opt-in</h2>
+            <p>Subskrypcja jest dobrowolna i opiera się na Twojej wyraźnej zgodzie. Stosujemy
+            procedurę double opt-in: po podaniu adresu e-mail otrzymasz wiadomość potwierdzającą.
+            Subskrypcja zostanie aktywowana dopiero po kliknięciu linku potwierdzającego. Chroni
+            to przed nieautoryzowanymi zapisami.</p>
+            <h2>4. Jak zrezygnować z subskrypcji</h2>
+            <p>Możesz zrezygnować z naszego newslettera w dowolnym momencie i bez podawania
+            przyczyny. Każdy newsletter zawiera link do rezygnacji na dole wiadomości. Możesz
+            również wycofać zgodę w ustawieniach konta lub kontaktując się z nami bezpośrednio.
+            Żądania rezygnacji są przetwarzane natychmiast i wchodzą w życie w ciągu 24 godzin.</p>
+            <h2>5. Przetwarzanie danych</h2>
+            <p>Przetwarzamy Twój adres e-mail oraz — jeśli go podałeś — imię i preferencje, aby
+            wysyłać spersonalizowane newslettery. Możemy korzystać z Twojej historii zakupów w celu
+            dostosowania treści do Twoich zainteresowań. Podstawą prawną tego przetwarzania jest
+            Twoja zgoda (art. 6 ust. 1 lit. a RODO). Twoje dane nie będą udostępniane stronom
+            trzecim w ich własnych celach marketingowych.</p>
+            <h2>6. Okres przechowywania danych</h2>
+            <p>Twój adres e-mail przechowujemy na potrzeby newslettera przez cały czas trwania
+            aktywnej subskrypcji. Po rezygnacji przechowujemy zapis zgody i jej wycofania przez
+            ustawowy okres przedawnienia, wymagany dla celów compliance i rozstrzygania sporów.
+            Sam adres e-mail jest usuwany z aktywnej listy mailingowej w ciągu 24 godzin od
+            rezygnacji.</p>
+            <h2>7. Podmioty przetwarzające</h2>
+            <p>Do wysyłki newsletterów korzystamy z zewnętrznych dostawców usług e-mail.
+            Dostawcy ci działają jako podmioty przetwarzające na podstawie umów o przetwarzaniu
+            danych i są umownie zobowiązani do nieużywania Twoich danych we własnych celach.</p>
+      sections:
+        00000003-bb00-4000-8000-000000000001:
+          core_type: section-text
+          width: content_width
+      tiles_order:
+        00000003-bb00-4000-8000-000000000001:
+          - 00000003-bb01-4000-8000-000000000001
+      sections_order:
+        - 00000003-bb00-4000-8000-000000000001
+    extension: null
+    meta:
+      title: "Polityka newslettera"
+      description: "Co zawiera nasz newsletter i jak zarządzać subskrypcją."
+      og_title: "Polityka newslettera"
+      og_description: "Warunki subskrypcji, częstotliwość i rezygnacja."
+    created_at: 2024-01-01 00:00:00+00:00
+    updated_at: 2024-01-01 00:00:00+00:00
+    category: null
+
+# --- PL: published snapshot ---
+- model: django_contentdb.content
+  pk: 915
+  fields:
+    uid: 00000003-0004-4000-8000-000000000004
+    content:
+      tiles:
+        00000003-bb01-4000-8000-000000000001:
+          core_type: tile-txt-btn
+          title: "Polityka newslettera"
+          description: >-
+            <h1>Polityka newslettera</h1>
+            <p>Niniejsza Polityka newslettera opisuje, czego możesz oczekiwać po zapisaniu się
+            do naszego newslettera, w jaki sposób przetwarzamy Twoje dane oraz jak w dowolnym
+            momencie możesz zarządzać lub wycofać subskrypcję.</p>
+            <h2>1. Co będziesz otrzymywać</h2>
+            <p>Subskrybując nasz newsletter, będziesz otrzymywać komunikaty handlowe, w tym
+            informacje o nowych produktach, oferty promocyjne, treści redakcyjne oraz aktualności
+            ze sklepu. Staramy się, aby nasze newslettery były dopasowane do Twoich zainteresowań
+            i historii zakupów.</p>
+            <h2>2. Częstotliwość wysyłki</h2>
+            <p>Wysyłamy newslettery regularnie, zazwyczaj od dwóch do czterech razy w miesiącu.
+            W okresach promocyjnych lub przy ważnych premierach produktów częstotliwość może być
+            wyższa. Nie wyślemy więcej niż jednej wiadomości dziennie bez uprzedniego powiadomienia.</p>
+            <h2>3. Zgoda i double opt-in</h2>
+            <p>Subskrypcja jest dobrowolna i opiera się na Twojej wyraźnej zgodzie. Stosujemy
+            procedurę double opt-in: po podaniu adresu e-mail otrzymasz wiadomość potwierdzającą.
+            Subskrypcja zostanie aktywowana dopiero po kliknięciu linku potwierdzającego. Chroni
+            to przed nieautoryzowanymi zapisami.</p>
+            <h2>4. Jak zrezygnować z subskrypcji</h2>
+            <p>Możesz zrezygnować z naszego newslettera w dowolnym momencie i bez podawania
+            przyczyny. Każdy newsletter zawiera link do rezygnacji na dole wiadomości. Możesz
+            również wycofać zgodę w ustawieniach konta lub kontaktując się z nami bezpośrednio.
+            Żądania rezygnacji są przetwarzane natychmiast i wchodzą w życie w ciągu 24 godzin.</p>
+            <h2>5. Przetwarzanie danych</h2>
+            <p>Przetwarzamy Twój adres e-mail oraz — jeśli go podałeś — imię i preferencje, aby
+            wysyłać spersonalizowane newslettery. Możemy korzystać z Twojej historii zakupów w celu
+            dostosowania treści do Twoich zainteresowań. Podstawą prawną tego przetwarzania jest
+            Twoja zgoda (art. 6 ust. 1 lit. a RODO). Twoje dane nie będą udostępniane stronom
+            trzecim w ich własnych celach marketingowych.</p>
+            <h2>6. Okres przechowywania danych</h2>
+            <p>Twój adres e-mail przechowujemy na potrzeby newslettera przez cały czas trwania
+            aktywnej subskrypcji. Po rezygnacji przechowujemy zapis zgody i jej wycofania przez
+            ustawowy okres przedawnienia, wymagany dla celów compliance i rozstrzygania sporów.
+            Sam adres e-mail jest usuwany z aktywnej listy mailingowej w ciągu 24 godzin od
+            rezygnacji.</p>
+            <h2>7. Podmioty przetwarzające</h2>
+            <p>Do wysyłki newsletterów korzystamy z zewnętrznych dostawców usług e-mail.
+            Dostawcy ci działają jako podmioty przetwarzające na podstawie umów o przetwarzaniu
+            danych i są umownie zobowiązani do nieużywania Twoich danych we własnych celach.</p>
+      sections:
+        00000003-bb00-4000-8000-000000000001:
+          core_type: section-text
+          width: content_width
+      tiles_order:
+        00000003-bb00-4000-8000-000000000001:
+          - 00000003-bb01-4000-8000-000000000001
+      sections_order:
+        - 00000003-bb00-4000-8000-000000000001
+    extension: null
+    meta:
+      title: "Polityka newslettera"
+      description: "Co zawiera nasz newsletter i jak zarządzać subskrypcją."
+      og_title: "Polityka newslettera"
+      og_description: "Warunki subskrypcji, częstotliwość i rezygnacja."
+    created_at: 2024-01-01 00:00:00+00:00
+    updated_at: 2024-01-01 00:00:00+00:00
+    category: null
+
+# --- DE: draft Content ---
+- model: django_contentdb.content
+  pk: 916
+  fields:
+    uid: 00000003-0005-4000-8000-000000000005
+    content:
+      tiles:
+        00000003-cc01-4000-8000-000000000001:
+          core_type: tile-txt-btn
+          title: "Newsletter-Richtlinie"
+          description: >-
+            <h1>Newsletter-Richtlinie</h1>
+            <p>Diese Newsletter-Richtlinie beschreibt, was Sie bei der Anmeldung zu unserem Newsletter
+            erwarten können, wie Ihre Daten verwendet werden und wie Sie Ihr Abonnement jederzeit
+            verwalten oder widerrufen können.</p>
+            <h2>1. Was Sie erhalten werden</h2>
+            <p>Mit der Anmeldung zu unserem Newsletter erhalten Sie Werbemitteilungen, darunter
+            Informationen zu neuen Produkten, Sonderangebote, redaktionelle Inhalte und
+            Shop-Neuigkeiten. Wir bemühen uns, Newsletter zu versenden, die auf Ihre Interessen
+            und Ihre Kaufhistorie abgestimmt sind.</p>
+            <h2>2. Versandfrequenz</h2>
+            <p>Wir versenden Newsletter regelmäßig, in der Regel zwei- bis viermal pro Monat.
+            In Aktionszeiträumen oder bei wichtigen Produkteinführungen kann die Häufigkeit höher
+            sein. Ohne vorherige Ankündigung versenden wir nicht mehr als eine E-Mail pro Tag.</p>
+            <h2>3. Einwilligung und Double-Opt-In</h2>
+            <p>Ihre Anmeldung erfolgt freiwillig und auf Grundlage Ihrer ausdrücklichen Einwilligung.
+            Wir nutzen das Double-Opt-In-Verfahren: Nach Eingabe Ihrer E-Mail-Adresse erhalten Sie
+            eine Bestätigungs-E-Mail. Ihr Abonnement wird erst nach dem Klick auf den
+            Bestätigungslink aktiviert. Dies schützt Sie vor unautorisierten Anmeldungen.</p>
+            <h2>4. Abmeldung</h2>
+            <p>Sie können den Newsletter jederzeit und ohne Angabe von Gründen abbestellen.
+            Jeder Newsletter enthält am Ende einen Abmeldelink. Sie können Ihre Einwilligung auch
+            über Ihre Kontoeinstellungen oder durch direkte Kontaktaufnahme widerrufen.
+            Abmeldeanfragen werden sofort verarbeitet und treten innerhalb von 24 Stunden in Kraft.</p>
+            <h2>5. Datenverarbeitung</h2>
+            <p>Wir verarbeiten Ihre E-Mail-Adresse sowie — falls angegeben — Ihren Namen und Ihre
+            Präferenzen, um Ihnen personalisierte Newsletter zuzusenden. Wir können Ihre
+            Bestellhistorie nutzen, um Inhalte auf Ihre Interessen abzustimmen. Die Rechtsgrundlage
+            dieser Verarbeitung ist Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Ihre Daten
+            werden nicht für eigene Marketingzwecke an Dritte weitergegeben.</p>
+            <h2>6. Speicherdauer</h2>
+            <p>Wir speichern Ihre E-Mail-Adresse für Newsletter-Zwecke, solange Ihr Abonnement aktiv
+            ist. Nach der Abmeldung bewahren wir den Einwilligungsnachweis und den Widerruf für die
+            gesetzliche Verjährungsfrist auf, wie es für Compliance- und Streitbeilegungszwecke
+            erforderlich ist. Die E-Mail-Adresse selbst wird innerhalb von 24 Stunden nach der
+            Abmeldung aus der aktiven Mailingliste entfernt.</p>
+            <h2>7. Auftragsverarbeiter</h2>
+            <p>Wir nutzen externe E-Mail-Dienstleister für den Versand unserer Newsletter. Diese
+            Dienstleister handeln auf Grundlage von Auftragsverarbeitungsverträgen als
+            Auftragsverarbeiter und sind vertraglich verpflichtet, Ihre Daten nicht für eigene
+            Zwecke zu verwenden.</p>
+      sections:
+        00000003-cc00-4000-8000-000000000001:
+          core_type: section-text
+          width: content_width
+      tiles_order:
+        00000003-cc00-4000-8000-000000000001:
+          - 00000003-cc01-4000-8000-000000000001
+      sections_order:
+        - 00000003-cc00-4000-8000-000000000001
+    extension: null
+    meta:
+      title: "Newsletter-Richtlinie"
+      description: "Was unser Newsletter enthält und wie Sie Ihr Abonnement verwalten."
+      og_title: "Newsletter-Richtlinie"
+      og_description: "Abonnementbedingungen, Versandfrequenz und Abmeldung."
+    created_at: 2024-01-01 00:00:00+00:00
+    updated_at: 2024-01-01 00:00:00+00:00
+    category: null
+
+# --- DE: published snapshot ---
+- model: django_contentdb.content
+  pk: 917
+  fields:
+    uid: 00000003-0006-4000-8000-000000000006
+    content:
+      tiles:
+        00000003-cc01-4000-8000-000000000001:
+          core_type: tile-txt-btn
+          title: "Newsletter-Richtlinie"
+          description: >-
+            <h1>Newsletter-Richtlinie</h1>
+            <p>Diese Newsletter-Richtlinie beschreibt, was Sie bei der Anmeldung zu unserem Newsletter
+            erwarten können, wie Ihre Daten verwendet werden und wie Sie Ihr Abonnement jederzeit
+            verwalten oder widerrufen können.</p>
+            <h2>1. Was Sie erhalten werden</h2>
+            <p>Mit der Anmeldung zu unserem Newsletter erhalten Sie Werbemitteilungen, darunter
+            Informationen zu neuen Produkten, Sonderangebote, redaktionelle Inhalte und
+            Shop-Neuigkeiten. Wir bemühen uns, Newsletter zu versenden, die auf Ihre Interessen
+            und Ihre Kaufhistorie abgestimmt sind.</p>
+            <h2>2. Versandfrequenz</h2>
+            <p>Wir versenden Newsletter regelmäßig, in der Regel zwei- bis viermal pro Monat.
+            In Aktionszeiträumen oder bei wichtigen Produkteinführungen kann die Häufigkeit höher
+            sein. Ohne vorherige Ankündigung versenden wir nicht mehr als eine E-Mail pro Tag.</p>
+            <h2>3. Einwilligung und Double-Opt-In</h2>
+            <p>Ihre Anmeldung erfolgt freiwillig und auf Grundlage Ihrer ausdrücklichen Einwilligung.
+            Wir nutzen das Double-Opt-In-Verfahren: Nach Eingabe Ihrer E-Mail-Adresse erhalten Sie
+            eine Bestätigungs-E-Mail. Ihr Abonnement wird erst nach dem Klick auf den
+            Bestätigungslink aktiviert. Dies schützt Sie vor unautorisierten Anmeldungen.</p>
+            <h2>4. Abmeldung</h2>
+            <p>Sie können den Newsletter jederzeit und ohne Angabe von Gründen abbestellen.
+            Jeder Newsletter enthält am Ende einen Abmeldelink. Sie können Ihre Einwilligung auch
+            über Ihre Kontoeinstellungen oder durch direkte Kontaktaufnahme widerrufen.
+            Abmeldeanfragen werden sofort verarbeitet und treten innerhalb von 24 Stunden in Kraft.</p>
+            <h2>5. Datenverarbeitung</h2>
+            <p>Wir verarbeiten Ihre E-Mail-Adresse sowie — falls angegeben — Ihren Namen und Ihre
+            Präferenzen, um Ihnen personalisierte Newsletter zuzusenden. Wir können Ihre
+            Bestellhistorie nutzen, um Inhalte auf Ihre Interessen abzustimmen. Die Rechtsgrundlage
+            dieser Verarbeitung ist Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Ihre Daten
+            werden nicht für eigene Marketingzwecke an Dritte weitergegeben.</p>
+            <h2>6. Speicherdauer</h2>
+            <p>Wir speichern Ihre E-Mail-Adresse für Newsletter-Zwecke, solange Ihr Abonnement aktiv
+            ist. Nach der Abmeldung bewahren wir den Einwilligungsnachweis und den Widerruf für die
+            gesetzliche Verjährungsfrist auf, wie es für Compliance- und Streitbeilegungszwecke
+            erforderlich ist. Die E-Mail-Adresse selbst wird innerhalb von 24 Stunden nach der
+            Abmeldung aus der aktiven Mailingliste entfernt.</p>
+            <h2>7. Auftragsverarbeiter</h2>
+            <p>Wir nutzen externe E-Mail-Dienstleister für den Versand unserer Newsletter. Diese
+            Dienstleister handeln auf Grundlage von Auftragsverarbeitungsverträgen als
+            Auftragsverarbeiter und sind vertraglich verpflichtet, Ihre Daten nicht für eigene
+            Zwecke zu verwenden.</p>
+      sections:
+        00000003-cc00-4000-8000-000000000001:
+          core_type: section-text
+          width: content_width
+      tiles_order:
+        00000003-cc00-4000-8000-000000000001:
+          - 00000003-cc01-4000-8000-000000000001
+      sections_order:
+        - 00000003-cc00-4000-8000-000000000001
+    extension: null
+    meta:
+      title: "Newsletter-Richtlinie"
+      description: "Was unser Newsletter enthält und wie Sie Ihr Abonnement verwalten."
+      og_title: "Newsletter-Richtlinie"
+      og_description: "Abonnementbedingungen, Versandfrequenz und Abmeldung."
+    created_at: 2024-01-01 00:00:00+00:00
+    updated_at: 2024-01-01 00:00:00+00:00
+    category: null
+
+# =============================================================================
+# DRAFTS
+# Draft PK mapping:
+#   900 = Terms EN,  901 = Terms PL,  902 = Terms DE
+#   903 = Privacy EN, 904 = Privacy PL, 905 = Privacy DE
+#   906 = Newsletter EN, 907 = Newsletter PL, 908 = Newsletter DE
+# =============================================================================
+
+- model: django_contentdb.draft
+  pk: 900
+  fields:
+    content_type: 6
+    content: 900
+    name: "Terms and Conditions (EN)"
+    language: 1
+    created_at: 2024-01-01 00:00:00+00:00
+    access_rights: []
+
+- model: django_contentdb.draft
+  pk: 901
+  fields:
+    content_type: 6
+    content: 902
+    name: "Regulamin (PL)"
+    language: 2
+    created_at: 2024-01-01 00:00:00+00:00
+    access_rights: []
+
+- model: django_contentdb.draft
+  pk: 902
+  fields:
+    content_type: 6
+    content: 904
+    name: "AGB (DE)"
+    language: 3
+    created_at: 2024-01-01 00:00:00+00:00
+    access_rights: []
+
+- model: django_contentdb.draft
+  pk: 903
+  fields:
+    content_type: 6
+    content: 906
+    name: "Privacy Policy (EN)"
+    language: 1
+    created_at: 2024-01-01 00:00:00+00:00
+    access_rights: []
+
+- model: django_contentdb.draft
+  pk: 904
+  fields:
+    content_type: 6
+    content: 908
+    name: "Polityka prywatności (PL)"
+    language: 2
+    created_at: 2024-01-01 00:00:00+00:00
+    access_rights: []
+
+- model: django_contentdb.draft
+  pk: 905
+  fields:
+    content_type: 6
+    content: 910
+    name: "Datenschutzerklärung (DE)"
+    language: 3
+    created_at: 2024-01-01 00:00:00+00:00
+    access_rights: []
+
+- model: django_contentdb.draft
+  pk: 906
+  fields:
+    content_type: 6
+    content: 912
+    name: "Newsletter Policy (EN)"
+    language: 1
+    created_at: 2024-01-01 00:00:00+00:00
+    access_rights: []
+
+- model: django_contentdb.draft
+  pk: 907
+  fields:
+    content_type: 6
+    content: 914
+    name: "Polityka newslettera (PL)"
+    language: 2
+    created_at: 2024-01-01 00:00:00+00:00
+    access_rights: []
+
+- model: django_contentdb.draft
+  pk: 908
+  fields:
+    content_type: 6
+    content: 916
+    name: "Newsletter-Richtlinie (DE)"
+    language: 3
+    created_at: 2024-01-01 00:00:00+00:00
+    access_rights: []
+
+# =============================================================================
+# PUBLISHED snapshots
+# Published PK mapping mirrors Draft PKs (900–908).
+# Each Published links to its Draft and the corresponding published Content.
+# =============================================================================
+
+- model: django_contentdb.published
+  pk: 900
+  fields:
+    draft: 900
+    content: 901
+    created_at: 2024-01-01 00:00:00+00:00
+
+- model: django_contentdb.published
+  pk: 901
+  fields:
+    draft: 901
+    content: 903
+    created_at: 2024-01-01 00:00:00+00:00
+
+- model: django_contentdb.published
+  pk: 902
+  fields:
+    draft: 902
+    content: 905
+    created_at: 2024-01-01 00:00:00+00:00
+
+- model: django_contentdb.published
+  pk: 903
+  fields:
+    draft: 903
+    content: 907
+    created_at: 2024-01-01 00:00:00+00:00
+
+- model: django_contentdb.published
+  pk: 904
+  fields:
+    draft: 904
+    content: 909
+    created_at: 2024-01-01 00:00:00+00:00
+
+- model: django_contentdb.published
+  pk: 905
+  fields:
+    draft: 905
+    content: 911
+    created_at: 2024-01-01 00:00:00+00:00
+
+- model: django_contentdb.published
+  pk: 906
+  fields:
+    draft: 906
+    content: 913
+    created_at: 2024-01-01 00:00:00+00:00
+
+- model: django_contentdb.published
+  pk: 907
+  fields:
+    draft: 907
+    content: 915
+    created_at: 2024-01-01 00:00:00+00:00
+
+- model: django_contentdb.published
+  pk: 908
+  fields:
+    draft: 908
+    content: 917
+    created_at: 2024-01-01 00:00:00+00:00
+
+# =============================================================================
+# ROUTES
+# Each route links to all language variants of its page via the drafts M2M.
+# Route PK mapping:
+#   900 = terms
+#   901 = privacy
+#   902 = newsletter-policy
+# =============================================================================
+
+- model: django_contentdb.route
+  pk: 900
+  fields:
+    url: terms
+    label: Terms and Conditions
+    placement: top
+    created_at: 2024-01-01 00:00:00+00:00
+    updated_at: 2024-01-01 00:00:00+00:00
+    drafts:
+      - 900
+      - 901
+      - 902
+
+- model: django_contentdb.route
+  pk: 901
+  fields:
+    url: privacy
+    label: Privacy Policy
+    placement: top
+    created_at: 2024-01-01 00:00:00+00:00
+    updated_at: 2024-01-01 00:00:00+00:00
+    drafts:
+      - 903
+      - 904
+      - 905
+
+- model: django_contentdb.route
+  pk: 902
+  fields:
+    url: newsletter-policy
+    label: Newsletter Policy
+    placement: top
+    created_at: 2024-01-01 00:00:00+00:00
+    updated_at: 2024-01-01 00:00:00+00:00
+    drafts:
+      - 906
+      - 907
+      - 908
+
+# ---------------------------------------------------------------------------
+# Content Sets — group language variants of each legal page
+# ---------------------------------------------------------------------------
+
+- model: django_contentdb.contentset
+  pk: 900
+  fields:
+    uid: a0000001-0000-0000-0000-000000000001
+    created_at: 2024-01-01 00:00:00+00:00
+    updated_at: 2024-01-01 00:00:00+00:00
+
+- model: django_contentdb.contentset
+  pk: 901
+  fields:
+    uid: a0000001-0000-0000-0000-000000000002
+    created_at: 2024-01-01 00:00:00+00:00
+    updated_at: 2024-01-01 00:00:00+00:00
+
+- model: django_contentdb.contentset
+  pk: 902
+  fields:
+    uid: a0000001-0000-0000-0000-000000000003
+    created_at: 2024-01-01 00:00:00+00:00
+    updated_at: 2024-01-01 00:00:00+00:00
+
+# Through-table: Terms (set 900 ← drafts 900, 901, 902)
+- model: django_contentdb.drafttocontentset
+  pk: 900
+  fields:
+    content_set: 900
+    draft: 900
+
+- model: django_contentdb.drafttocontentset
+  pk: 901
+  fields:
+    content_set: 900
+    draft: 901
+
+- model: django_contentdb.drafttocontentset
+  pk: 902
+  fields:
+    content_set: 900
+    draft: 902
+
+# Through-table: Privacy (set 901 ← drafts 903, 904, 905)
+- model: django_contentdb.drafttocontentset
+  pk: 903
+  fields:
+    content_set: 901
+    draft: 903
+
+- model: django_contentdb.drafttocontentset
+  pk: 904
+  fields:
+    content_set: 901
+    draft: 904
+
+- model: django_contentdb.drafttocontentset
+  pk: 905
+  fields:
+    content_set: 901
+    draft: 905
+
+# Through-table: Newsletter (set 902 ← drafts 906, 907, 908)
+- model: django_contentdb.drafttocontentset
+  pk: 906
+  fields:
+    content_set: 902
+    draft: 906
+
+- model: django_contentdb.drafttocontentset
+  pk: 907
+  fields:
+    content_set: 902
+    draft: 907
+
+- model: django_contentdb.drafttocontentset
+  pk: 908
+  fields:
+    content_set: 902
+    draft: 908

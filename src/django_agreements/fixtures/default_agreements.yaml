@@ -1,0 +1,173 @@
+# Default agreement definitions + published versions with EU-compliant consent text.
+# Load with: python manage.py loaddata default_agreements
+#
+# System consents (is_system=true) are fixture-managed and cannot be deleted via CMS.
+# display_contexts controls where each consent appears in the storefront.
+
+# --- AgreementDefinition records ---
+
+# 1. Terms of Service — mandatory in checkout, always shown (even if previously accepted)
+- model: django_agreements.agreementdefinition
+  pk: 1
+  fields:
+    slug: terms-of-service
+    name: Terms of Service
+    category: mandatory
+    consent_channel: general
+    content_route: terms
+    is_active: true
+    is_system: true
+    display_contexts:
+      - checkout
+    sort_order: 1
+    created_at: "2024-01-01T00:00:00Z"
+    modified_at: "2024-01-01T00:00:00Z"
+
+# 2. Privacy Policy — mandatory at signup; in checkout only if user not logged in
+- model: django_agreements.agreementdefinition
+  pk: 2
+  fields:
+    slug: privacy-policy
+    name: Privacy Policy
+    category: mandatory
+    consent_channel: general
+    content_route: privacy
+    is_active: true
+    is_system: true
+    display_contexts:
+      - registration
+      - checkout
+    sort_order: 2
+    created_at: "2024-01-01T00:00:00Z"
+    modified_at: "2024-01-01T00:00:00Z"
+
+# 3. Email Marketing — newsletter box, signup, checkout
+- model: django_agreements.agreementdefinition
+  pk: 3
+  fields:
+    slug: marketing-email
+    name: Email Marketing Consent
+    category: marketing
+    consent_channel: email
+    content_route: ""
+    is_active: true
+    is_system: true
+    display_contexts:
+      - newsletter
+      - registration
+      - checkout
+    sort_order: 10
+    created_at: "2024-01-01T00:00:00Z"
+    modified_at: "2024-01-01T00:00:00Z"
+
+# 4. SMS Marketing — checkout only
+- model: django_agreements.agreementdefinition
+  pk: 4
+  fields:
+    slug: marketing-sms
+    name: SMS Marketing Consent
+    category: marketing
+    consent_channel: sms
+    content_route: ""
+    is_active: true
+    is_system: false
+    display_contexts:
+      - checkout
+    sort_order: 11
+    created_at: "2024-01-01T00:00:00Z"
+    modified_at: "2024-01-01T00:00:00Z"
+
+# 5. Push Notifications — checkout only
+- model: django_agreements.agreementdefinition
+  pk: 5
+  fields:
+    slug: marketing-push
+    name: Push Notification Consent
+    category: marketing
+    consent_channel: push
+    content_route: ""
+    is_active: true
+    is_system: false
+    display_contexts:
+      - checkout
+    sort_order: 12
+    created_at: "2024-01-01T00:00:00Z"
+    modified_at: "2024-01-01T00:00:00Z"
+
+# --- AgreementVersion records (v1, PUBLISHED, is_current=true) ---
+# Summary text contains limited HTML with embedded links for EU compliance.
+
+- model: django_agreements.agreementversion
+  pk: 1
+  fields:
+    definition: 1
+    version_number: 1
+    summary_t9n:
+      en: 'I have read and accept the <a href="/terms" target="_blank">Terms and Conditions</a> of the store. *'
+      pl: 'Zapoznałem/am się i akceptuję <a href="/terms" target="_blank">Regulamin sklepu</a>. *'
+      de: 'Ich habe die <a href="/terms" target="_blank">Allgemeinen Geschäftsbedingungen</a> gelesen und akzeptiere sie. *'
+    content_published_id: null
+    published_at: "2024-01-01T00:00:00Z"
+    is_current: true
+    created_at: "2024-01-01T00:00:00Z"
+    modified_at: "2024-01-01T00:00:00Z"
+
+- model: django_agreements.agreementversion
+  pk: 2
+  fields:
+    definition: 2
+    version_number: 1
+    summary_t9n:
+      en: 'I have read and accept the <a href="/privacy" target="_blank">Privacy Policy</a>. I consent to the processing of my personal data for the purpose of handling my order. *'
+      pl: 'Zapoznałem/am się i akceptuję <a href="/privacy" target="_blank">Politykę prywatności</a>. Wyrażam zgodę na przetwarzanie moich danych osobowych w celu realizacji zamówienia. *'
+      de: 'Ich habe die <a href="/privacy" target="_blank">Datenschutzerklärung</a> gelesen und akzeptiere sie. Ich stimme der Verarbeitung meiner personenbezogenen Daten zur Bestellabwicklung zu. *'
+    content_published_id: null
+    published_at: "2024-01-01T00:00:00Z"
+    is_current: true
+    created_at: "2024-01-01T00:00:00Z"
+    modified_at: "2024-01-01T00:00:00Z"
+
+- model: django_agreements.agreementversion
+  pk: 3
+  fields:
+    definition: 3
+    version_number: 1
+    summary_t9n:
+      en: 'I consent to receiving commercial information by email in accordance with the <a href="/privacy" target="_blank">Privacy Policy</a>. I understand I can withdraw this consent at any time.'
+      pl: 'Wyrażam zgodę na otrzymywanie informacji handlowych drogą elektroniczną zgodnie z <a href="/privacy" target="_blank">Polityką prywatności</a>. Wiem, że mogę wycofać tę zgodę w dowolnym momencie.'
+      de: 'Ich stimme dem Erhalt von Werbeinformationen per E-Mail gemäß der <a href="/privacy" target="_blank">Datenschutzerklärung</a> zu. Ich kann diese Einwilligung jederzeit widerrufen.'
+    content_published_id: null
+    published_at: "2024-01-01T00:00:00Z"
+    is_current: true
+    created_at: "2024-01-01T00:00:00Z"
+    modified_at: "2024-01-01T00:00:00Z"
+
+- model: django_agreements.agreementversion
+  pk: 4
+  fields:
+    definition: 4
+    version_number: 1
+    summary_t9n:
+      en: 'I consent to receiving commercial information via SMS in accordance with the <a href="/privacy" target="_blank">Privacy Policy</a>. I understand I can withdraw this consent at any time.'
+      pl: 'Wyrażam zgodę na otrzymywanie informacji handlowych za pośrednictwem SMS zgodnie z <a href="/privacy" target="_blank">Polityką prywatności</a>. Wiem, że mogę wycofać tę zgodę w dowolnym momencie.'
+      de: 'Ich stimme dem Erhalt von Werbeinformationen per SMS gemäß der <a href="/privacy" target="_blank">Datenschutzerklärung</a> zu. Ich kann diese Einwilligung jederzeit widerrufen.'
+    content_published_id: null
+    published_at: "2024-01-01T00:00:00Z"
+    is_current: true
+    created_at: "2024-01-01T00:00:00Z"
+    modified_at: "2024-01-01T00:00:00Z"
+
+- model: django_agreements.agreementversion
+  pk: 5
+  fields:
+    definition: 5
+    version_number: 1
+    summary_t9n:
+      en: 'I consent to receiving push notifications with marketing content in accordance with the <a href="/privacy" target="_blank">Privacy Policy</a>. I understand I can withdraw this consent at any time.'
+      pl: 'Wyrażam zgodę na otrzymywanie powiadomień push z treściami marketingowymi zgodnie z <a href="/privacy" target="_blank">Polityką prywatności</a>. Wiem, że mogę wycofać tę zgodę w dowolnym momencie.'
+      de: 'Ich stimme dem Erhalt von Push-Benachrichtigungen mit Werbeinhalten gemäß der <a href="/privacy" target="_blank">Datenschutzerklärung</a> zu. Ich kann diese Einwilligung jederzeit widerrufen.'
+    content_published_id: null
+    published_at: "2024-01-01T00:00:00Z"
+    is_current: true
+    created_at: "2024-01-01T00:00:00Z"
+    modified_at: "2024-01-01T00:00:00Z"
