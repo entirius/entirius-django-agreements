@@ -1,4 +1,7 @@
-# django-agreements Signals
+---
+title: Signals
+description: The consent_changed_signal contract — when it fires, providing args, and receiver patterns.
+---
 
 ## consent_changed_signal
 
