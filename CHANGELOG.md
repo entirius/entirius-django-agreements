@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.1.0 — unreleased
+
+- `ClauseSet`: versioned legal clauses (information, opt-out, retention) per channel, legal
+  basis and language; published sets are immutable, one current version per triple; edited
+  only in the Django admin ("Publish selected" action).
+- `ObjectionEvent`: append-only log of confirmed opt-outs, independent of `ConsentRecord`.
+- `LegalBasis` enum (`django_agreements.enums`) — the platform-wide GDPR legal basis definition.
+- `clause_set_service.resolve_clause_set()` (requested language → channel default language →
+  `ClauseSetMissing`), `render_legal_footer()` (plain text, `{recipient_email}` placeholder),
+  `publish()`, `create_version()`; `objection_service.record_objection()`.
+- Read-only admin API v2 `GET clause-sets/` (filters `channel_idx`, `legal_basis`, `language`, `current`).
+- Migration `0002_clause_sets`.
+
 ## 2.0.0 — 2026-07-10
 
 - Initial public release: GDPR-compliant consent management — versioned agreement
