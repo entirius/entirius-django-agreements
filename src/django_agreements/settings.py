@@ -28,3 +28,6 @@ AGREEMENTS_API_KEY = getattr(settings, "AGREEMENTS_API_KEY", "")
 
 # Well-known slug constants
 MARKETING_EMAIL_SLUG = "marketing-email"
+
+# The only placeholder render_legal_footer() substitutes in clause texts (plain str.replace, never str.format)
+AGREEMENTS_CLAUSE_PLACEHOLDER = "{recipient_email}"

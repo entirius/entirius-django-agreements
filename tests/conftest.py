@@ -102,3 +102,41 @@ def marketing_published_version(marketing_definition):
         published_at=timezone.now(),
         is_current=True,
     )
+
+
+@pytest.fixture
+def lang_pl(db):
+    from django_regional.models import Language
+
+    return Language.objects.create(iso2="pl", iso3="pol", name_en="Polish", name_pl="polski")
+
+
+@pytest.fixture
+def lang_en(db):
+    from django_regional.models import Language
+
+    return Language.objects.create(iso2="en", iso3="eng", name_en="English", name_pl="angielski")
+
+
+@pytest.fixture
+def make_clause_set(channel):
+    """Create a clause set on `channel`; published + current unless published=False."""
+
+    def _make(language, legal_basis="legitimate_interest", version=1, published=True, **texts):
+        from django.utils import timezone
+
+        from django_agreements.models import ClauseSet
+
+        return ClauseSet.objects.create(
+            channel=channel,
+            legal_basis=legal_basis,
+            language=language,
+            version=version,
+            info_clause=texts.get("info_clause", f"Info {language.iso2} for {{recipient_email}}"),
+            optout_clause=texts.get("optout_clause", f"Opt-out {language.iso2}"),
+            retention_clause=texts.get("retention_clause", f"Retention {language.iso2}"),
+            is_current=published,
+            published_at=timezone.now() if published else None,
+        )
+
+    return _make
