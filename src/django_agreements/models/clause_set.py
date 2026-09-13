@@ -4,11 +4,21 @@
 
 from django.conf import settings
 from django.db import models
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from django_utils.models.base_model import BaseModel
 
 from django_agreements.enums import LegalBasis
 
-LOCKED_FIELDS = ("channel_id", "legal_basis", "language_id", "info_clause", "optout_clause", "retention_clause")
+LOCKED_FIELDS = (
+    "channel_id",
+    "legal_basis",
+    "language_id",
+    "info_clause",
+    "optout_clause",
+    "retention_clause",
+    "published_at",
+)
 
 
 class ClauseSet(BaseModel):
@@ -39,13 +49,28 @@ class ClauseSet(BaseModel):
         return f"{self.channel_id}/{self.legal_basis}/{self.language_id} v{self.version}"
 
     def save(self, *args, **kwargs):
-        self._refuse_published_change()
+        self.refuse_published_change(kwargs.get("update_fields"))
         super().save(*args, **kwargs)
 
-    def _refuse_published_change(self) -> None:
-        """Raise ValueError when a locked field differs from the stored published row."""
-        if self.pk is None:
+    def refuse_published_change(self, update_fields=None) -> None:
+        """Raise ValueError when a saved locked field differs from the stored published row."""
+        fields = _saved_locked_fields(update_fields)
+        if self.pk is None or not fields:
             return
-        stored = ClauseSet.objects.filter(pk=self.pk, published_at__isnull=False).values(*LOCKED_FIELDS).first()
-        if stored and any(stored[field] != getattr(self, field) for field in LOCKED_FIELDS):
+        stored = ClauseSet.objects.filter(pk=self.pk, published_at__isnull=False).values(*fields).first()
+        if stored and any(stored[field] != getattr(self, field) for field in fields):
             raise ValueError(f"Clause set {self} is published and cannot be changed.")
+
+
+def _saved_locked_fields(update_fields) -> list[str]:
+    """Locked fields written by this save — all of them unless `update_fields` narrows the save."""
+    if update_fields is None:
+        return list(LOCKED_FIELDS)
+    return [field for field in LOCKED_FIELDS if {field, field.removesuffix("_id")} & set(update_fields)]
+
+
+@receiver(pre_save, sender=ClauseSet)
+def refuse_raw_published_change(sender, instance: ClauseSet, raw: bool, update_fields=None, **kwargs) -> None:
+    """Fixture loads (`raw=True`) skip `save()` — apply the same guard so loaddata cannot rewrite published rows."""
+    if raw:
+        instance.refuse_published_change(update_fields)

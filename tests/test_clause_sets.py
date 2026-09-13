@@ -4,8 +4,11 @@
 
 """Tests for legal clause sets: resolution, footer rendering, versioning, admin rules."""
 
+from datetime import timedelta
+
 import pytest
 from django.contrib import admin
+from django.core import serializers
 from django.test import RequestFactory
 
 from django_agreements.admin import ClauseSetAdmin
@@ -130,6 +133,45 @@ class TestVersioning:
         clause_set.refresh_from_db()
         clause_set.is_current = False
         clause_set.save()
+        assert ClauseSet.objects.get(pk=clause_set.pk).info_clause.startswith("Info pl")
+
+    def test_published_clause_set_cannot_be_unpublished(self, make_clause_set, lang_pl):
+        clause_set = make_clause_set(lang_pl)
+        for published_at in (None, clause_set.published_at + timedelta(days=1)):
+            clause_set.published_at = published_at
+            with pytest.raises(ValueError, match="cannot be changed"):
+                clause_set.save()
+        assert ClauseSet.objects.get(pk=clause_set.pk).published_at is not None
+
+    def test_unpublish_then_edit_is_refused(self, make_clause_set, lang_pl):
+        clause_set = make_clause_set(lang_pl)
+        clause_set.published_at = None
+        with pytest.raises(ValueError, match="cannot be changed"):
+            clause_set.save(update_fields=["published_at"])
+        clause_set.info_clause = "Rewritten"
+        with pytest.raises(ValueError, match="cannot be changed"):
+            clause_set.save()
+        assert ClauseSet.objects.get(pk=clause_set.pk).info_clause.startswith("Info pl")
+
+    def test_update_fields_is_current_on_stale_instance_allowed(self, make_clause_set, lang_pl):
+        clause_set = make_clause_set(lang_pl)
+        clause_set.info_clause = "Stale in-memory text"
+        clause_set.is_current = False
+        clause_set.save(update_fields=["is_current"])
+        stored = ClauseSet.objects.get(pk=clause_set.pk)
+        assert not stored.is_current and stored.info_clause.startswith("Info pl")
+
+    def test_raw_fixture_load_cannot_rewrite_published_row(self, make_clause_set, lang_pl):
+        clause_set = make_clause_set(lang_pl)
+        # the JSON serializer keeps milliseconds only — pin a whole second, as in the seed fixture
+        ClauseSet.objects.filter(pk=clause_set.pk).update(published_at=clause_set.published_at.replace(microsecond=0))
+        clause_set.refresh_from_db()
+        fixture = serializers.serialize("json", [clause_set])
+        next(serializers.deserialize("json", fixture)).save()
+        rewritten = next(serializers.deserialize("json", fixture))
+        rewritten.object.info_clause = "Rewritten by fixture"
+        with pytest.raises(ValueError, match="cannot be changed"):
+            rewritten.save()
         assert ClauseSet.objects.get(pk=clause_set.pk).info_clause.startswith("Info pl")
 
     def test_draft_clause_set_text_can_change(self, make_clause_set, lang_pl):

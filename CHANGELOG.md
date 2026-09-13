@@ -14,6 +14,8 @@
 - Published clause sets can be neither deleted (admin) nor changed (`ClauseSet.save()` raises
   `ValueError`); `publish()` raises on an already-published set; `ObjectionEvent.clause_set` is
   `PROTECT` (migration `0003_objection_clause_set_protect`).
+- `published_at` of a published clause set is locked too (no un-publish); the guard honours
+  `update_fields` and also runs on fixture loads (`pre_save`, `raw=True`).
 - Clause set language lookups (resolver, admin API `language` filter) are case-insensitive.
 - `Channel` natural key (`idx`) for fixtures.
 - Migration `0002_clause_sets`.
