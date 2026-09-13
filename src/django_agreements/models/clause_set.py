@@ -8,6 +8,8 @@ from django_utils.models.base_model import BaseModel
 
 from django_agreements.enums import LegalBasis
 
+LOCKED_FIELDS = ("channel_id", "legal_basis", "language_id", "info_clause", "optout_clause", "retention_clause")
+
 
 class ClauseSet(BaseModel):
     """Versioned legal clauses per channel, legal basis and language. Immutable once published."""
@@ -35,3 +37,15 @@ class ClauseSet(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.channel_id}/{self.legal_basis}/{self.language_id} v{self.version}"
+
+    def save(self, *args, **kwargs):
+        self._refuse_published_change()
+        super().save(*args, **kwargs)
+
+    def _refuse_published_change(self) -> None:
+        """Raise ValueError when a locked field differs from the stored published row."""
+        if self.pk is None:
+            return
+        stored = ClauseSet.objects.filter(pk=self.pk, published_at__isnull=False).values(*LOCKED_FIELDS).first()
+        if stored and any(stored[field] != getattr(self, field) for field in LOCKED_FIELDS):
+            raise ValueError(f"Clause set {self} is published and cannot be changed.")

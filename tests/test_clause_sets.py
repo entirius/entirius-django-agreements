@@ -57,6 +57,11 @@ class TestResolveClauseSet:
         with pytest.raises(ValueError, match="Invalid legal basis"):
             _resolve("pl", legal_basis="whim")
 
+    def test_C03_resolve_upper_case_language(self, make_clause_set, lang_pl, lang_en):
+        make_clause_set(lang_en)
+        expected = make_clause_set(lang_pl)
+        assert _resolve("PL") == expected == _resolve("pl")
+
     def test_unknown_channel_raises_does_not_exist(self, db):
         with pytest.raises(Channel.DoesNotExist):
             _resolve("pl")
@@ -104,6 +109,35 @@ class TestVersioning:
         assert other_language.is_current
         assert _resolve("pl") == new
 
+    def test_publish_already_published_raises(self, make_clause_set, lang_pl, admin_user):
+        old = make_clause_set(lang_pl, version=1)
+        new = make_clause_set(lang_pl, version=2, published=False)
+        clause_set_service.publish(new, user=admin_user)
+        old.refresh_from_db()
+        with pytest.raises(ValueError, match="already published"):
+            clause_set_service.publish(old, user=admin_user)
+        assert _resolve("pl") == new
+
+    def test_published_clause_set_text_cannot_change(self, make_clause_set, lang_pl, lang_en):
+        clause_set = make_clause_set(lang_pl)
+        clause_set.info_clause = "Rewritten"
+        with pytest.raises(ValueError, match="cannot be changed"):
+            clause_set.save()
+        clause_set.refresh_from_db()
+        clause_set.language = lang_en
+        with pytest.raises(ValueError, match="cannot be changed"):
+            clause_set.save()
+        clause_set.refresh_from_db()
+        clause_set.is_current = False
+        clause_set.save()
+        assert ClauseSet.objects.get(pk=clause_set.pk).info_clause.startswith("Info pl")
+
+    def test_draft_clause_set_text_can_change(self, make_clause_set, lang_pl):
+        draft = make_clause_set(lang_pl, published=False)
+        draft.info_clause = "Edited draft"
+        draft.save()
+        assert ClauseSet.objects.get(pk=draft.pk).info_clause == "Edited draft"
+
 
 @pytest.mark.django_db
 class TestClauseSetAdmin:
@@ -128,3 +162,11 @@ class TestClauseSetAdmin:
         created = ClauseSet.objects.get(pk=obj.pk)
         assert (created.version, created.is_current, created.created_by) == (2, False, admin_user)
         assert created.info_clause == "New info"
+
+    def test_admin_cannot_delete_published_clause_set(self, make_clause_set, lang_pl, lang_en, admin_user):
+        model_admin = ClauseSetAdmin(ClauseSet, admin.site)
+        request = RequestFactory().get("/")
+        request.user = admin_user
+        assert not model_admin.has_delete_permission(request, make_clause_set(lang_pl))
+        assert model_admin.has_delete_permission(request, make_clause_set(lang_en, published=False))
+        assert "delete_selected" not in model_admin.get_actions(request)

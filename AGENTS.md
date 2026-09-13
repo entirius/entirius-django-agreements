@@ -48,7 +48,9 @@ Layer rule: `API → Services → Models → DB`. No ORM in views.
 - `AgreementVersion` is immutable once published; only draft versions accept PATCH.
 - `ClauseSet` is immutable once published — a text change is a new version (admin add → `create_version`,
   then "Publish selected"). One `is_current` per (channel, basis, language) is enforced by
-  `clause_set_service.publish()`, not by the DB.
+  `clause_set_service.publish()`, not by the DB. `ClauseSet.save()` raises `ValueError` on a changed text,
+  channel, basis or language of a published row; `publish()` raises on an already-published set; the admin
+  cannot delete published sets and objections `PROTECT` their clause set.
 - `resolve_clause_set()` falls back only to the channel's default language — never to another basis or channel.
   Footer placeholders are `str.replace` of `{recipient_email}` only; other braces stay verbatim.
 - Seeded clause texts (emporium `fixtures/django_agreements.cfg.yaml`) are `TEST —` placeholders: the lawyer's

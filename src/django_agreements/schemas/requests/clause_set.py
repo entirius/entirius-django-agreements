@@ -4,7 +4,7 @@
 
 """Pydantic request schemas for clause sets."""
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from django_agreements.enums import LegalBasis
 
@@ -18,3 +18,8 @@ class ClauseSetListQuery(BaseModel):
         None, description="Filter by language (ISO 639-1)", examples=["pl"], pattern=r"^[a-zA-Z]{2}$"
     )
     current: bool | None = Field(None, description="Only current (true) or non-current (false)", examples=[True])
+
+    @field_validator("language")
+    @classmethod
+    def lowercase_language(cls, value: str | None) -> str | None:
+        return value.lower() if value else value

@@ -19,7 +19,7 @@ class ObjectionEvent(models.Model):
     source = models.CharField(max_length=32, choices=SOURCE_CHOICES)
     reason = models.TextField(blank=True)
     clause_set = models.ForeignKey(
-        "django_agreements.ClauseSet", null=True, blank=True, on_delete=models.SET_NULL, related_name="objection_events"
+        "django_agreements.ClauseSet", null=True, blank=True, on_delete=models.PROTECT, related_name="objection_events"
     )
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -34,7 +34,7 @@ def resolve_clause_set(*, channel_idx: str, legal_basis: str, language_code: str
     if legal_basis not in LegalBasis.values:
         raise ValueError(f"Invalid legal basis '{legal_basis}'. Must be one of: {LegalBasis.values}.")
     channel = Channel.objects.get(idx=channel_idx)
-    clause_set = _current(channel, legal_basis, {"language__iso2": language_code})
+    clause_set = _current(channel, legal_basis, {"language__iso2": language_code.lower()})
     if clause_set is None and channel.default_language_id:
         clause_set = _current(channel, legal_basis, {"language_id": channel.default_language_id})
     if clause_set is None:
@@ -50,7 +50,12 @@ def render_legal_footer(clause_set: ClauseSet, *, recipient_email: str) -> str:
 
 
 def publish(clause_set: ClauseSet, *, user) -> ClauseSet:
-    """Publish a clause set and make it the only current one for its (channel, basis, language)."""
+    """Publish a clause set and make it the only current one for its (channel, basis, language).
+
+    Raises ValueError if already published — a previous text becomes current again as a new version.
+    """
+    if clause_set.published_at:
+        raise ValueError(f"Clause set {clause_set} is already published.")
     with transaction.atomic():
         ClauseSet.objects.filter(
             channel_id=clause_set.channel_id,
@@ -58,7 +63,7 @@ def publish(clause_set: ClauseSet, *, user) -> ClauseSet:
             language_id=clause_set.language_id,
             is_current=True,
         ).exclude(pk=clause_set.pk).update(is_current=False)
-        clause_set.published_at = clause_set.published_at or timezone.now()
+        clause_set.published_at = timezone.now()
         clause_set.is_current = True
         clause_set.save(update_fields=["published_at", "is_current", "modified_at"])
     return clause_set

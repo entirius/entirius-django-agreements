@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-from django.contrib import admin
+from django.contrib import admin, messages
 
 from django_agreements.models import (
     AgreementDefinition,
@@ -108,9 +108,14 @@ class ChannelAdmin(admin.ModelAdmin):
 
 @admin.action(description="Publish selected")
 def publish_clause_sets(modeladmin, request, queryset):
+    published = 0
     for clause_set in queryset:
-        clause_set_service.publish(clause_set, user=request.user)
-    modeladmin.message_user(request, f"Published {queryset.count()} clause sets.")
+        try:
+            clause_set_service.publish(clause_set, user=request.user)
+            published += 1
+        except ValueError as error:
+            modeladmin.message_user(request, str(error), level=messages.ERROR)
+    modeladmin.message_user(request, f"Published {published} clause sets.")
 
 
 @admin.register(ClauseSet)
@@ -127,6 +132,16 @@ class ClauseSetAdmin(admin.ModelAdmin):
         if obj.published_at:
             return (*locked, *clause_set_service.CLAUSE_FIELDS)
         return locked
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        actions.pop("delete_selected", None)
+        return actions
+
+    def has_delete_permission(self, request, obj=None):
+        if obj is not None and obj.published_at:
+            return False
+        return super().has_delete_permission(request, obj)
 
     def save_model(self, request, obj, form, change):
         if change:

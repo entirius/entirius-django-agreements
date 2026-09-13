@@ -11,6 +11,11 @@
   `ClauseSetMissing`), `render_legal_footer()` (plain text, `{recipient_email}` placeholder),
   `publish()`, `create_version()`; `objection_service.record_objection()`.
 - Read-only admin API v2 `GET clause-sets/` (filters `channel_idx`, `legal_basis`, `language`, `current`).
+- Published clause sets can be neither deleted (admin) nor changed (`ClauseSet.save()` raises
+  `ValueError`); `publish()` raises on an already-published set; `ObjectionEvent.clause_set` is
+  `PROTECT` (migration `0003_objection_clause_set_protect`).
+- Clause set language lookups (resolver, admin API `language` filter) are case-insensitive.
+- `Channel` natural key (`idx`) for fixtures.
 - Migration `0002_clause_sets`.
 
 ## 2.0.0 — 2026-07-10

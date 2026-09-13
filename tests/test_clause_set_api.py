@@ -48,7 +48,7 @@ class TestClauseSetListApi:
         make_clause_set(lang_pl, legal_basis="consent")
         make_clause_set(lang_en, legal_basis="consent")
         make_clause_set(lang_pl)
-        response = admin_client.get(CLAUSE_SET_LIST_URL, {"legal_basis": "consent", "language": "en"})
+        response = admin_client.get(CLAUSE_SET_LIST_URL, {"legal_basis": "consent", "language": "EN"})
         assert response.json()["count"] == 1
 
     def test_clause_sets_invalid_filter_returns_400(self, admin_client):
