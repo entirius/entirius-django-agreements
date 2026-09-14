@@ -6,7 +6,8 @@
   basis and language; published sets are immutable, one current version per triple; edited
   only in the Django admin ("Publish selected" action).
 - `ObjectionEvent`: append-only log of confirmed opt-outs, independent of `ConsentRecord`.
-- `gdpr.py`: GDPR export and erasure hooks (pseudonymised consent and objection rows).
+- `gdpr.py`: GDPR export and erasure hooks (pseudonymised consent, objection and order agreement snapshot rows;
+  export also matches the token of an earlier erasure).
 - `LegalBasis` enum (`django_agreements.enums`) — the platform-wide GDPR legal basis definition.
 - `clause_set_service.resolve_clause_set()` (requested language → channel default language →
   `ClauseSetMissing`), `render_legal_footer()` (plain text, `{recipient_email}` placeholder),
