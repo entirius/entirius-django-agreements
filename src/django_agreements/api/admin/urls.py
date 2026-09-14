@@ -5,6 +5,7 @@
 from django.urls import path
 
 from django_agreements.api.admin.views.channel_views import ChannelViewSet
+from django_agreements.api.admin.views.clause_set_views import ClauseSetViewSet
 from django_agreements.api.admin.views.consent_views import (
     ConsentViewSet,
     MarketingSubscribersViewSet,
@@ -20,6 +21,8 @@ urlpatterns = [
     # Channels
     path("channels/", ChannelViewSet.as_view({"get": "list"}), name="admin-channel-list"),
     path("channels/sync/", ChannelViewSet.as_view({"post": "sync"}), name="admin-channel-sync"),
+    # Legal clause sets (read-only)
+    path("clause-sets/", ClauseSetViewSet.as_view({"get": "list"}), name="admin-clause-set-list"),
     # Definitions
     path("definitions/", DefinitionViewSet.as_view({"get": "list", "post": "create"}), name="admin-definition-list"),
     path(

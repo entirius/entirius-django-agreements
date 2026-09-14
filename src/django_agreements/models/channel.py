@@ -6,6 +6,11 @@ from django.db import models
 from django_utils.models.base_model import BaseModel
 
 
+class ChannelManager(models.Manager):
+    def get_by_natural_key(self, idx: str) -> "Channel":
+        return self.get(idx=idx)
+
+
 class Channel(BaseModel):
     """Pattern 2 scoping channel — own model, synced from PIM. No FK to django_pim."""
 
@@ -20,11 +25,16 @@ class Channel(BaseModel):
     )
     languages = models.ManyToManyField("django_regional.Language", blank=True, related_name="agreements_channels")
 
+    objects = ChannelManager()
+
     class Meta:
         ordering = ["name"]
 
     def __str__(self) -> str:
         return self.idx
+
+    def natural_key(self) -> tuple[str]:
+        return (self.idx,)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

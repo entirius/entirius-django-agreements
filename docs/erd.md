@@ -109,3 +109,80 @@ ConsentRecord.agreement_version_id -> AgreementVersion.id: {style.stroke: "#00AC
 
 OrderAgreementSnapshot.agreement_version_id -> AgreementVersion.id: {style.stroke: "#00ACC1"}
 ```
+
+## Legal Clauses & Objections
+
+```d2 layout=elk
+ClauseSet: {
+  shape: sql_table
+  style.fill: "#00ACC1"
+  style.stroke: "#12141A"
+  style.font-color: "#EBEDF2"
+  id: int {constraint: primary_key}
+  channel_id: int {constraint: foreign_key}
+  language_id: int {constraint: foreign_key}
+  created_by_id: int {constraint: foreign_key}
+  legal_basis: varchar
+  version: int
+  info_clause: text
+  optout_clause: text
+  retention_clause: text
+  is_current: bool
+  published_at: timestamp
+}
+
+ObjectionEvent: {
+  shape: sql_table
+  style.fill: "#00ACC1"
+  style.stroke: "#12141A"
+  style.font-color: "#EBEDF2"
+  id: int {constraint: primary_key}
+  channel_id: int {constraint: foreign_key}
+  clause_set_id: int {constraint: foreign_key}
+  email: varchar
+  source: varchar
+  reason: text
+}
+
+Channel: {
+  shape: sql_table
+  style.fill: "#484B57"
+  style.stroke: "#1A1C25"
+  style.stroke-dash: 3
+  style.font-color: "#9A9CAA"
+  id: int {constraint: primary_key}
+  label: "Channel (Agreements & Consent)"
+}
+
+Language: {
+  shape: sql_table
+  style.fill: "#484B57"
+  style.stroke: "#1A1C25"
+  style.stroke-dash: 3
+  style.font-color: "#9A9CAA"
+  id: int {constraint: primary_key}
+  label: "Language (External: django_regional)"
+}
+
+User: {
+  shape: sql_table
+  style.fill: "#484B57"
+  style.stroke: "#1A1C25"
+  style.stroke-dash: 3
+  style.font-color: "#9A9CAA"
+  id: int {constraint: primary_key}
+  label: "User (External: auth)"
+}
+
+
+
+ClauseSet.channel_id -> Channel.id: {style.stroke: "#484B57"}
+
+ClauseSet.language_id -> Language.id: {style.stroke: "#484B57"}
+
+ClauseSet.created_by_id -> User.id: {style.stroke: "#484B57"}
+
+ObjectionEvent.channel_id -> Channel.id: {style.stroke: "#484B57"}
+
+ObjectionEvent.clause_set_id -> ClauseSet.id: {style.stroke: "#00ACC1"}
+```

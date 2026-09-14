@@ -47,6 +47,25 @@ Shipped via `fixtures/default_agreements.yaml`:
 
 All ship as drafts. Admin must set `summary_t9n` and publish before use.
 
+## Legal Clauses
+
+`ClauseSet` holds the legal texts that accompany outbound messages — information clause, opt-out
+wording, retention statement — versioned per channel, `LegalBasis` (`consent`, `legitimate_interest`,
+`contract`) and language. Texts are edited only in the Django admin; publishing makes a version the
+single current one for its triple, and published texts are read-only.
+
+```python
+from django_agreements.services.clause_set_service import render_legal_footer, resolve_clause_set
+
+clause_set = resolve_clause_set(channel_idx="default-europe", legal_basis="legitimate_interest", language_code="pl")
+footer = render_legal_footer(clause_set, recipient_email="lead@example.com")
+```
+
+Resolution: requested language → channel default language → `ClauseSetMissing`. The footer is plain
+text; `{recipient_email}` is the only placeholder (`AGREEMENTS_CLAUSE_PLACEHOLDER`). Confirmed opt-outs
+are appended with `objection_service.record_objection()` as `ObjectionEvent` rows. Admin API:
+`GET /api/agreements/v2/admin/clause-sets/?channel_idx=&legal_basis=&language=&current=true` (read-only).
+
 ## Pages
 
 - [Master Data Architecture](/volkanos/modules/agreements/master-data/) — entity roles, versioning, channel scoping, signal integration
