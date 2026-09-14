@@ -55,6 +55,9 @@ Layer rule: `API → Services → Models → DB`. No ORM in views.
   clause text fails loudly instead of rewriting the row (changed text = new pk + version). `publish()` raises on
   an already-published set; the admin cannot delete published sets and objections `PROTECT` their clause set.
   Queryset `.update()` bypasses every guard — only the service uses it, for `is_current`.
+- `gdpr.py` (discovered by django_leads): export `ConsentRecord` / `ObjectionEvent` rows by email; erasure is the one
+  deliberate exception to append-only — a queryset `update()` pseudonymises `email` to the leads token
+  (`LEADS_ANONYMISED_DOMAIN`), drops `ip_address` and `user_agent`; rows stay as the audit trail.
 - `resolve_clause_set()` falls back only to the channel's default language — never to another basis or channel.
   Footer placeholders are `str.replace` of `{recipient_email}` only; other braces stay verbatim.
 - Seeded clause texts (emporium `fixtures/django_agreements.cfg.yaml`) are `TEST —` placeholders: the lawyer's

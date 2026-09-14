@@ -6,6 +6,9 @@ from django.conf import settings
 
 DEBUG = getattr(settings, "DEBUG", False)
 
+# Host of the tokens that replace erased addresses (same setting as django_leads and django_communicator).
+LEADS_ANONYMISED_DOMAIN = getattr(settings, "LEADS_ANONYMISED_DOMAIN", "anonymised.invalid")
+
 # Default language for T9N fallback
 T9N_DEFAULT_LANG = getattr(settings, "T9N_DEFAULT_LANG", "en")
 
