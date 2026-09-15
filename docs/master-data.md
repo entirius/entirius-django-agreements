@@ -14,8 +14,10 @@ architecture and the constraints that enforce GDPR compliance.
 | `AgreementDefinition` | Master: the agreement type (slug, category, channel scope) | Yes (soft-delete only) |
 | `AgreementVersion` | Master: versioned content snapshot | Immutable once published |
 | `Channel` | Master: channel scoping mirror from PIM | Synced from PIM |
-| `ConsentRecord` | Transaction: append-only audit trail | Never (no updates, no deletes) |
-| `OrderAgreementSnapshot` | Transaction: text frozen at order acceptance | Never |
+| `ConsentRecord` | Transaction: append-only audit trail | Never (no updates, no deletes; GDPR erasure pseudonymises the person) |
+| `OrderAgreementSnapshot` | Transaction: text frozen at order acceptance | Never (GDPR erasure pseudonymises the person) |
+| `ClauseSet` | Master: legal clauses per channel × `LegalBasis` × language | Immutable once published |
+| `ObjectionEvent` | Transaction: append-only log of confirmed opt-outs | Never (GDPR erasure pseudonymises the email) |
 
 ## AgreementDefinition
 
@@ -138,6 +140,30 @@ OrderAgreementSnapshot
 `body_snapshot` is fetched from ContentDB at acceptance time and stored directly — the
 customer always sees the exact text they agreed to, even if the ContentDB document changes later.
 
+## ClauseSet and ObjectionEvent
+
+```
+ClauseSet
+├── channel (FK)                PROTECT
+├── legal_basis                 LegalBasis: consent | legitimate_interest | contract
+├── language (FK)               django_regional.Language, PROTECT
+├── version                     unique per (channel, legal_basis, language)
+├── info_clause / optout_clause / retention_clause
+├── is_current                  one True per triple — service-enforced
+├── published_at                null = draft; locked once set
+└── created_by (FK)             SET_NULL
+
+ObjectionEvent
+├── channel (FK)                PROTECT
+├── email                       indexed
+├── source                      communicator | manual | api
+├── reason
+└── clause_set (FK, nullable)   PROTECT — the clause text the person objected under
+```
+
+`ObjectionEvent` is independent of `ConsentRecord`: an objection to processing on legitimate interest is not
+a consent withdrawal. Publishing rules and GDPR hooks: [Overview](/volkanos/modules/agreements/).
+
 ## ContentDB Integration
 
 Mandatory agreements (terms-of-service, privacy-policy) link their full text to ContentDB
@@ -180,6 +206,7 @@ django-agreements
 ├── soft depends: django_contentdb.Published (ImportError-safe)
 ├── soft depends: django_pim.Channel (sync only, ImportError-safe)
 └── depended on:  django-email (via consent_changed_signal)
+                  django-leads (LegalBasis, clause sets, discovers gdpr.py)
                   django-checkout (via OrderAgreementSnapshot UUID ref)
 ```
 

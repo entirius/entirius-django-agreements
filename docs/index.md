@@ -19,6 +19,8 @@ per-order acceptance snapshots.
 - Channel scoping — agreements can be global or restricted to specific storefronts
 - Full legal text stored in ContentDB (mandatory agreements) or inline (marketing)
 - Emits `consent_changed_signal` for downstream integrations (double opt-in, unsubscribe)
+- Versioned legal clause sets per channel × legal basis × language, and an append-only objection log
+- GDPR export and erasure hooks for the consent, objection and order snapshot rows
 
 ## Architecture
 
@@ -65,6 +67,40 @@ Resolution: requested language → channel default language → `ClauseSetMissin
 text; `{recipient_email}` is the only placeholder (`AGREEMENTS_CLAUSE_PLACEHOLDER`). Confirmed opt-outs
 are appended with `objection_service.record_objection()` as `ObjectionEvent` rows. Admin API:
 `GET /api/agreements/v2/admin/clause-sets/?channel_idx=&legal_basis=&language=&current=true` (read-only).
+Language lookups (resolver and the `language` filter) are case-insensitive.
+
+`LegalBasis` (`django_agreements.enums`) is the platform-wide definition of the GDPR legal basis; other
+modules (leads) import it instead of declaring their own.
+
+### Publishing rules
+
+- A new text is a new version: in the admin, add a clause set (`clause_set_service.create_version()`
+  numbers it), then run "Publish selected" (`publish()`), which makes it the single `is_current` row of
+  its triple. `publish()` raises on an already-published set.
+- One current version per triple is enforced by the service, not by a database constraint.
+- A published set is locked: `ClauseSet.save()` raises `ValueError` when the channel, basis, language,
+  any clause text or `published_at` changes (no un-publishing). With `update_fields` only the listed
+  fields are compared, so toggling `is_current` works.
+- Fixture loads (`loaddata`, `raw=True`) skip `save()`; a `pre_save` receiver applies the same guard, so a
+  re-seed with changed text fails instead of rewriting a published row.
+- Published sets cannot be deleted in the admin, and `ObjectionEvent.clause_set` is `PROTECT`.
+- Queryset `.update()` bypasses the guards — only the service uses it, for `is_current`.
+
+## GDPR Export and Erasure
+
+`django_agreements.gdpr` exposes `gdpr_export(email)` and `gdpr_erase(email)`, discovered at call time by
+the leads GDPR registry (`<app>.gdpr` of every installed app); agreements itself does not depend on leads.
+
+| Hook | Behaviour |
+|---|---|
+| `gdpr_export` | `ConsentRecord`, `ObjectionEvent` and `OrderAgreementSnapshot` rows matching the plain email (case-insensitive) **or** its erasure token — rows pseudonymised earlier stay exportable |
+| `gdpr_erase` | one transaction of queryset `update()`s: `email` → token, `ip_address` and `user_agent` cleared (objections keep no IP); returns the row count per model |
+
+The token is `anon-<first 16 hex of sha256(lowercased email)>@<LEADS_ANONYMISED_DOMAIN>` — the same token
+leads and communicator write, so one erased person matches across modules. Erasure is the one deliberate
+exception to append-only: the rows stay as the audit trail (what was consented to, objected to or accepted
+with an order, and when). An order snapshot keeps `body_snapshot`, language, `granted` and timestamps — an
+order-retention obligation.
 
 ## Pages
 
@@ -72,3 +108,4 @@ are appended with `objection_service.record_objection()` as `ObjectionEvent` row
 - [Database Diagrams](/volkanos/modules/agreements/erd/) — auto-generated ER diagrams
 - [Legal Pages](/volkanos/modules/agreements/legal-pages/) — content structure, versioning, consent-to-text traceability
 - [Signals](/volkanos/modules/agreements/signals/) — `consent_changed_signal` contract and receiver patterns
+- [Configuration](/volkanos/modules/agreements/configuration/) — Django settings

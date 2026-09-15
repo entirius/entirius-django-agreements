@@ -21,6 +21,12 @@
 - Clause set language lookups (resolver, admin API `language` filter) are case-insensitive.
 - `Channel` natural key (`idx`) for fixtures.
 - Migration `0002_clause_sets`.
+- Setting `LEADS_ANONYMISED_DOMAIN` (default `anonymised.invalid`, shared with leads and communicator) — the
+  host of the erasure token; `AGREEMENTS_CLAUSE_PLACEHOLDER` names the only footer placeholder.
+- Docs: module pages for the portal (`index`, `master-data`, `legal-pages`, `configuration`, `signals`, `erd`;
+  `email-integration.md` removed), clause sets, publishing rules and GDPR hooks in `index.md` and
+  `master-data.md`; ERD group "Legal Clauses & Objections".
+- `.github/CODEOWNERS`: `@entirius/maintainers-backend`.
 
 ## 2.0.0 — 2026-07-10
 

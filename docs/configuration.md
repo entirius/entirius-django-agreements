@@ -12,6 +12,9 @@ description: "Django settings for the django-agreements module — language fall
 | `NEWSLETTER_TOKEN_MAX_AGE` | `int` | `86400` | Maximum age (in seconds) for newsletter confirmation tokens. Default is 24 hours. |
 | `STOREFRONT_BASE_URL` | `str` | `"http://localhost:3000"` | Base URL of the storefront. Used when building confirmation and unsubscribe links in emails. |
 | `NEWSLETTER_CONFIRM_PATH` | `str` | `"/newsletter/confirm"` | Path appended to `STOREFRONT_BASE_URL` for the newsletter confirmation endpoint. |
+| `AGREEMENTS_API_KEY` | `str` | `""` | Key the storefront sends as `X-API-KEY` to the public endpoints. |
+| `AGREEMENTS_PUBLIC_CONSENT_SOURCES` | `tuple[str, ...]` | `("checkout", "registration", "consent-page", "newsletter-signup")` | Consent sources accepted from the public submission API; internal sources are set by the service only. |
+| `LEADS_ANONYMISED_DOMAIN` | `str` | `"anonymised.invalid"` | Host part of the token that replaces an erased email (`gdpr_erase`). Must equal the value used by leads and communicator. |
 
 ## Example Override
 
