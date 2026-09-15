@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.1.0 — unreleased
+## 2.1.0 — 2026-09-15
 
 - `ClauseSet`: versioned legal clauses (information, opt-out, retention) per channel, legal
   basis and language; published sets are immutable, one current version per triple; edited
