@@ -8,3 +8,8 @@ groups:
       - AgreementVersion
       - ConsentRecord
       - OrderAgreementSnapshot
+  - name: agreements-clauses
+    title: "Legal Clauses & Objections"
+    models:
+      - ClauseSet
+      - ObjectionEvent
