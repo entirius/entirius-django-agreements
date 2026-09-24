@@ -18,6 +18,9 @@ PUBLIC_CONSENT_SOURCES: tuple[str, ...] = getattr(
     settings, "AGREEMENTS_PUBLIC_CONSENT_SOURCES", ("checkout", "registration", "consent-page", "newsletter-signup")
 )
 
+# Cookie consent validity in days — returned by the public banner endpoint so every front sets the same cookie lifetime.
+COOKIE_CONSENT_MAX_AGE_DAYS = getattr(settings, "AGREEMENTS_COOKIE_CONSENT_MAX_AGE_DAYS", 365)
+
 # Newsletter double opt-in
 NEWSLETTER_DOUBLE_OPTIN = getattr(settings, "NEWSLETTER_DOUBLE_OPTIN", True)
 NEWSLETTER_TOKEN_MAX_AGE = getattr(settings, "NEWSLETTER_TOKEN_MAX_AGE", 86400)
