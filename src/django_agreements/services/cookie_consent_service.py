@@ -4,9 +4,12 @@
 
 """Cookie banner resolution and the anonymous cookie consent log."""
 
-from uuid import UUID
+from datetime import UTC, timedelta
+from uuid import UUID, uuid4
 
-from django.db.models import Q
+from django.db.models import Count, F, Q, QuerySet
+from django.db.models.functions import TruncDate
+from django.utils import timezone
 
 from django_agreements import settings as agreements_settings
 from django_agreements.models import AgreementVersion, Channel, CookieConsent
@@ -125,3 +128,96 @@ def _validate_choice(config: list[dict], action: str, categories: dict[str, bool
         raise ValueError("accept_all requires every category to be true.")
     if action in (ACTION_REJECT_ALL, ACTION_WITHDRAW) and True in optional:
         raise ValueError(f"{action} requires every non-required category to be false.")
+
+
+def _filter(queryset: QuerySet, **lookups) -> QuerySet:
+    """Apply every lookup that has a value; None or "" means no filter. Bad values raise at filter time."""
+    return queryset.filter(**{lookup: value for lookup, value in lookups.items() if value not in (None, "")})
+
+
+def list_consents(
+    *,
+    consent_id: UUID | str | None = None,
+    channel_idx: str | None = None,
+    language: str | None = None,
+    action: str | None = None,
+    revision: int | str | None = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
+) -> QuerySet[CookieConsent]:
+    """Cookie decisions, newest first. `revision` is the version pk; dates are ISO 8601 strings."""
+    queryset = CookieConsent.objects.select_related("agreement_version__definition").order_by("-created_at", "-pk")
+    return _filter(
+        queryset,
+        consent_id=consent_id,
+        channel_idx=channel_idx,
+        language=language,
+        action=action,
+        agreement_version_id=revision,
+        created_at__gte=date_from,
+        created_at__lte=date_to,
+    )
+
+
+def history(consent_id: UUID | str) -> QuerySet[CookieConsent]:
+    """Every decision of one visitor (consent_id), newest first."""
+    return list_consents(consent_id=consent_id)
+
+
+def latest_state(consent_id: UUID | str) -> CookieConsent | None:
+    """The visitor's current decision, or None when the id is unknown."""
+    return history(consent_id).first()
+
+
+def daily_stats(
+    *,
+    channel_idx: str | None = None,
+    language: str | None = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
+) -> list[dict]:
+    """Decision counts per UTC day, revision, language and action."""
+    queryset = _filter(
+        CookieConsent.objects.all(),
+        channel_idx=channel_idx,
+        language=language,
+        created_at__gte=date_from,
+        created_at__lte=date_to,
+    )
+    rows = (
+        queryset.annotate(
+            day=TruncDate("created_at", tzinfo=UTC),
+            revision=F("agreement_version_id"),
+            version_number=F("agreement_version__version_number"),
+        )
+        .values("day", "revision", "version_number", "language", "action")
+        .annotate(count=Count("pk"))
+        .order_by("day", "revision", "language", "action")
+    )
+    return list(rows)
+
+
+def erase(consent_id: UUID | str) -> int:
+    """GDPR erasure: all rows of the id get one new random id — kept for statistics, unlinkable to the device.
+
+    One of the two documented writes to existing rows (the other is purge_older_than).
+    """
+    return CookieConsent.objects.filter(consent_id=consent_id).update(consent_id=uuid4())
+
+
+def purge_older_than(days: int, *, dry_run: bool = False, batch_size: int = 5000) -> int:
+    """Delete decisions older than `days` in pk batches; returns the count (dry_run: counts only).
+
+    Refuses a retention shorter than the consent validity — it could delete the proof of a consent still in use.
+    """
+    max_age = agreements_settings.COOKIE_CONSENT_MAX_AGE_DAYS
+    if days < max_age:
+        raise ValueError(f"Retention of {days} days is shorter than the cookie consent validity ({max_age} days).")
+    expired = CookieConsent.objects.filter(created_at__lt=timezone.now() - timedelta(days=days)).order_by()
+    if dry_run:
+        return expired.count()
+    deleted = 0
+    while batch := list(expired.values_list("pk", flat=True)[:batch_size]):
+        count, _ = CookieConsent.objects.filter(pk__in=batch).delete()
+        deleted += count
+    return deleted
