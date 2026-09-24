@@ -53,6 +53,7 @@ AgreementVersion: {
   content_published_id: int
   published_at: timestamp
   is_current: bool
+  cookie_banner: jsonb
 }
 
 ConsentRecord: {
@@ -85,6 +86,20 @@ OrderAgreementSnapshot: {
   ip_address: varchar
 }
 
+CookieConsent: {
+  shape: sql_table
+  style.fill: "#00ACC1"
+  style.stroke: "#12141A"
+  style.font-color: "#EBEDF2"
+  id: int {constraint: primary_key}
+  agreement_version_id: int {constraint: foreign_key}
+  consent_id: uuid
+  channel_idx: varchar
+  language: varchar
+  categories: jsonb
+  action: varchar
+}
+
 Language: {
   shape: sql_table
   style.fill: "#484B57"
@@ -108,6 +123,8 @@ AgreementVersion.definition_id -> AgreementDefinition.id: {style.stroke: "#00ACC
 ConsentRecord.agreement_version_id -> AgreementVersion.id: {style.stroke: "#00ACC1"}
 
 OrderAgreementSnapshot.agreement_version_id -> AgreementVersion.id: {style.stroke: "#00ACC1"}
+
+CookieConsent.agreement_version_id -> AgreementVersion.id: {style.stroke: "#00ACC1"}
 ```
 
 ## Legal Clauses & Objections
