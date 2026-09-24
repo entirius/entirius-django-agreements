@@ -22,6 +22,8 @@
   public definition list.
 - Fixture `cookie_banner` (global PL/EN draft banner, loaded on demand).
 - Tests: migration drift check and OpenAPI schema validation.
+- Marketing subscribers list and CSV: `consent_channel` now carries the agreement's consent channel (it repeated the
+  shop channel).
 - Docs: `cookie-consent.md`; `signals.md` corrected to the code (`consent_changed`, sent only by the confirmation
   and unsubscribe links); `master-data.md` source values and dependency map corrected; ERD with `CookieConsent`.
 

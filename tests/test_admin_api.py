@@ -573,6 +573,26 @@ class TestMarketingSubscribersList:
         assert response.status_code == 200
         assert response.json()["count"] == 0
 
+    def test_consent_channel_is_the_agreement_channel(self, admin_client, marketing_published_version):
+        # Arrange
+        from django_agreements.services import consent_service
+
+        consent_service.record_consent(
+            email="subscriber@test.com",
+            slug="marketing-email",
+            granted=True,
+            source="registration",
+            channel_idx="default-europe",
+        )
+
+        # Act
+        response = admin_client.get(MARKETING_SUBSCRIBERS_URL)
+
+        # Assert
+        result = response.json()["results"][0]
+        assert result["consent_channel"] == "email"
+        assert result["channel_idx"] == "default-europe"
+
 
 @pytest.mark.django_db
 class TestMarketingSubscribersExport:
@@ -606,6 +626,28 @@ class TestMarketingSubscribersExport:
         content = b"".join(response.streaming_content).decode("utf-8")
         assert "email" in content
         assert "subscriber@test.com" in content
+
+    def test_csv_consent_channel_is_the_agreement_channel(self, admin_client, marketing_published_version):
+        # Arrange
+        from django_agreements.services import consent_service
+
+        consent_service.record_consent(
+            email="subscriber@test.com",
+            slug="marketing-email",
+            granted=True,
+            source="registration",
+            channel_idx="default-europe",
+        )
+
+        # Act
+        response = admin_client.get(MARKETING_SUBSCRIBERS_EXPORT_URL)
+
+        # Assert
+        content = b"".join(response.streaming_content).decode("utf-8")
+        header, row = content.splitlines()[:2]
+        columns = dict(zip(header.split(","), row.split(","), strict=True))
+        assert columns["consent_channel"] == "email"
+        assert columns["channel"] == "default-europe"
 
 
 @pytest.mark.django_db
