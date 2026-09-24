@@ -75,7 +75,9 @@ class PublicDefinitionViewSet(viewsets.ViewSet):
         category = request.query_params.get("category")
         channel_default_lang = _resolve_channel_default_lang(channel_idx)
 
-        qs = definition_service.list_definitions(include_inactive=False, category=category, channel_idx=channel_idx)
+        qs = definition_service.list_definitions(
+            include_inactive=False, category=category, channel_idx=channel_idx, include_cookies=False
+        )
         paginator = AdminPageNumberPagination()
         page = paginator.paginate_queryset(qs, request)
         results = []
