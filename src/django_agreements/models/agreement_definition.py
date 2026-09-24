@@ -9,7 +9,12 @@ from django_utils.models.base_model import BaseModel
 class AgreementDefinition(BaseModel):
     """Top-level agreement definition (e.g., 'terms-of-service', 'marketing-email')."""
 
-    CATEGORY_CHOICES = [("mandatory", "Mandatory"), ("marketing", "Marketing"), ("informational", "Informational")]
+    CATEGORY_CHOICES = [
+        ("mandatory", "Mandatory"),
+        ("marketing", "Marketing"),
+        ("informational", "Informational"),
+        ("cookies", "Cookies"),
+    ]
 
     CONSENT_CHANNEL_CHOICES = [
         ("general", "General"),
