@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-"""Pydantic response schemas for the public cookie banner and consent log."""
+"""Pydantic response schemas for the cookie banner and the cookie consent log (public and admin)."""
 
-from datetime import datetime
+from datetime import date, datetime
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -76,3 +76,67 @@ class CookieConsentRecordedResponse(BaseModel):
     language: str = Field(description="ISO 639-1 code the banner was shown in", examples=["pl"])
     action: str = Field(description="Recorded action", examples=["custom"])
     created_at: datetime = Field(description="Decision timestamp", examples=["2026-09-01T12:00:00Z"])
+
+
+_CONSENT_ID_EXAMPLE = "3f2b8c1e-7a4d-4e9b-9c2a-1d5e6f7a8b9c"
+
+
+class CookieConsentResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int = Field(description="Log row id", examples=[42])
+    consent_id: UUID = Field(
+        description="Visitor's consent id (from the consent cookie)", examples=[_CONSENT_ID_EXAMPLE]
+    )
+    channel_idx: str = Field(description="Channel the decision was made on", examples=["default-europe"])
+    language: str = Field(description="ISO 639-1 code the banner was shown in", examples=["pl"])
+    revision: int = Field(description="Banner revision (agreement version id)", examples=[12])
+    version_number: int = Field(description="Version number of the banner definition", examples=[1])
+    definition_slug: str = Field(description="Banner definition slug", examples=["cookie-banner"])
+    action: str = Field(description="accept_all, reject_all, custom or withdraw", examples=["custom"])
+    categories: dict[str, bool] = Field(
+        description="Decision per category", examples=[{"necessary": True, "analytics": True, "marketing": False}]
+    )
+    created_at: datetime = Field(description="Decision timestamp", examples=["2026-09-01T12:00:00Z"])
+
+
+class CookieConsentListResponse(BaseModel):
+    count: int = Field(description="Total number of decisions matching the filters", examples=[120])
+    next: str | None = Field(
+        None,
+        description="URL of the next page",
+        examples=["http://localhost:8000/api/agreements/v2/admin/cookie-consents/?page=2"],
+    )
+    previous: str | None = Field(None, description="URL of the previous page", examples=[None])
+    results: list[CookieConsentResponse] = Field(description="Decisions on this page, newest first", examples=[[]])
+
+
+class CookieConsentStatsRow(BaseModel):
+    day: date = Field(description="UTC day", examples=["2026-09-01"])
+    revision: int = Field(description="Banner revision (agreement version id)", examples=[12])
+    version_number: int = Field(description="Version number of the banner definition", examples=[1])
+    language: str = Field(description="ISO 639-1 code the banner was shown in", examples=["pl"])
+    action: str = Field(description="accept_all, reject_all, custom or withdraw", examples=["accept_all"])
+    count: int = Field(description="Number of decisions", examples=[57])
+
+
+class CookieConsentStatsResponse(BaseModel):
+    results: list[CookieConsentStatsRow] = Field(
+        description="Counts ordered by day, revision, language, action",
+        examples=[
+            [
+                {
+                    "day": "2026-09-01",
+                    "revision": 12,
+                    "version_number": 1,
+                    "language": "pl",
+                    "action": "accept_all",
+                    "count": 57,
+                }
+            ]
+        ],
+    )
+
+
+class CookieConsentEraseResponse(BaseModel):
+    erased: int = Field(description="Decisions moved to a new random consent id", examples=[3])
