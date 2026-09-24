@@ -28,12 +28,14 @@ append-only audit trail, and order agreement snapshots.
 - `models/` — `Channel` (own scoping model, no FK to PIM), `AgreementDefinition` (slug, category,
   channels M2M), `AgreementVersion` (immutable, auto-versioned), `ConsentRecord` (append-only audit
   log), `OrderAgreementSnapshot` (per-order text freeze), `ClauseSet` (versioned legal clauses per
-  channel × `LegalBasis` × language), `ObjectionEvent` (append-only opt-out log).
+  channel × `LegalBasis` × language), `ObjectionEvent` (append-only opt-out log), `CookieConsent`
+  (append-only anonymous log of cookie banner decisions — `consent_id` UUID, no email/IP/user agent).
 - `enums.py` — `LegalBasis`, the platform-wide legal basis definition (leads imports it).
 - `services/` — channel sync from PIM, definition/version CRUD with system-consent guards,
   legal content history (ContentDB snapshots), consent recording and queries, order snapshots,
   HMAC token service for consent confirmation links, clause set resolution + legal footer
-  rendering (`clause_set_service`), objection recording (`objection_service`).
+  rendering (`clause_set_service`), objection recording (`objection_service`), cookie banner resolution,
+  decision log, stats, erasure and retention purge (`cookie_consent_service`).
 - `schemas/` — pydantic request/response models.
 - `api/` — `admin/` (v2, JWT + IsAdminUser) and `public/` (v2, AllowAny, channel-scoped).
 
@@ -64,5 +66,12 @@ Layer rule: `API → Services → Models → DB`. No ORM in views.
   `tests/test_gdpr.py::test_token_parity_with_django_leads` compares them on tricky inputs when leads is installed.
 - `resolve_clause_set()` falls back only to the channel's default language — never to another basis or channel.
   Footer placeholders are `str.replace` of `{recipient_email}` only; other braces stay verbatim.
+- Cookie consent (docs: `docs/cookie-consent.md`): the banner is a `category="cookies"` definition — body =
+  `summary_t9n`, categories + buttons = `AgreementVersion.cookie_banner`; **revision = version pk**. The cookies
+  category is excluded from every email-keyed flow (`record_consent`, status, people, `for-user`, public definitions).
+  `CookieConsent` is append-only; `cookie_consent_service.erase()` and `purge_older_than()` are the only writes to
+  existing rows. `publish_version()` refuses a banner whose languages miss a channel language — a global banner must
+  cover the languages of every channel.
+- `fixtures/cookie_banner.yaml` is loaded once per stack: a re-load resets the definition and version 100 to draft.
 - Seeded clause texts (emporium `fixtures/django_agreements.cfg.yaml`) are `TEST —` placeholders: the lawyer's
   texts are pasted in the admin as a new version and published before the staging canary.
