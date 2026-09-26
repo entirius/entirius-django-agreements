@@ -11,6 +11,7 @@ DRF's ``SimpleRateThrottle.__init__`` only calls ``get_rate()`` when ``rate``
 is unset, so a class ``rate`` silently disables the service override.
 """
 
+from django.core.exceptions import ImproperlyConfigured
 from rest_framework.throttling import AnonRateThrottle
 
 
@@ -26,7 +27,7 @@ class CookieConsentThrottle(AnonRateThrottle):
     def get_rate(self) -> str:
         try:
             rate = super().get_rate()
-        except Exception:  # noqa: BLE001 — DRF raises ImproperlyConfigured when the scope has no rate
+        except ImproperlyConfigured:  # scope missing from DEFAULT_THROTTLE_RATES
             return self.fallback_rate
         if not rate or "/" not in rate:  # a malformed rate must not disable throttling
             return self.fallback_rate
