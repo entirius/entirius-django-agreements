@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- The newsletter subscribe key is verified by django-access when installed: `APIKeyAuthentication` accepts an access
+  token with scope `agreements.subscribe` (channel pin included) and never compares `AGREEMENTS_API_KEY`, which works
+  on as an imported legacy token. Without django-access nothing changes.
+
 ## 2.1.0 — 2026-09-15
 
 - `ClauseSet`: versioned legal clauses (information, opt-out, retention) per channel, legal
