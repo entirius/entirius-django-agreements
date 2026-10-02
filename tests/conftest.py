@@ -5,6 +5,7 @@
 import secrets
 
 import pytest
+from django.apps import apps
 from django.contrib.auth.models import User
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -150,12 +151,17 @@ def make_api_key(settings):
 
     agreements has one key, ``settings.AGREEMENTS_API_KEY`` — not bound to a channel or a scope, so both
     arguments are accepted and ignored. The key contract tests go through this helper only, so moving the check
-    onto another key store changes this function, never the assertions. Values are random and never printed.
+    onto another key store changes this function, never the assertions. With django_access installed the setting is
+    also imported as a legacy token, as a deploy's migrate does. Values are random and never printed.
     """
 
     def make_api_key(channel=None, scope: str | None = None) -> str:
         raw = secrets.token_hex(32)
         settings.AGREEMENTS_API_KEY = raw
+        if apps.is_installed("django_access"):
+            from django_access.services.legacy import import_legacy_keys
+
+            import_legacy_keys()
         return raw
 
     return make_api_key
