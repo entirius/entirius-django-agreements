@@ -2,6 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import secrets
+
 import pytest
 from django.contrib.auth.models import User
 from rest_framework.test import APIClient
@@ -140,3 +142,20 @@ def make_clause_set(channel):
         )
 
     return _make
+
+
+@pytest.fixture
+def make_api_key(settings):
+    """Configure the key the module accepts today and return its raw value.
+
+    agreements has one key, ``settings.AGREEMENTS_API_KEY`` — not bound to a channel or a scope, so both
+    arguments are accepted and ignored. The key contract tests go through this helper only, so moving the check
+    onto another key store changes this function, never the assertions. Values are random and never printed.
+    """
+
+    def make_api_key(channel=None, scope: str | None = None) -> str:
+        raw = secrets.token_hex(32)
+        settings.AGREEMENTS_API_KEY = raw
+        return raw
+
+    return make_api_key
