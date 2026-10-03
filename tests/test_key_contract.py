@@ -73,3 +73,31 @@ def test_public_definitions_answer_without_a_key(api_client, make_api_key):
     make_api_key()
     response = api_client.get(reverse("public-definition-list", kwargs={"channel_idx": "default-europe"}))
     assert response.status_code == 200
+
+
+@pytest.fixture
+def without_access():
+    """Force the legacy branch of the key check whichever way the suite runs."""
+    with patch("django_agreements.api.public.authentication.apps.is_installed", return_value=False):
+        yield
+
+
+def test_legacy_setting_key_subscribes(api_client, settings, without_access):
+    settings.AGREEMENTS_API_KEY = secrets.token_hex(32)
+    assert _subscribe(api_client, settings.AGREEMENTS_API_KEY).status_code == 201
+
+
+def test_legacy_wrong_key_is_refused(api_client, settings, without_access):
+    settings.AGREEMENTS_API_KEY = secrets.token_hex(32)
+    assert _subscribe(api_client, secrets.token_hex(32)).status_code == 401
+
+
+def test_legacy_empty_setting_refuses_every_key(api_client, settings, without_access):
+    settings.AGREEMENTS_API_KEY = ""
+    assert _subscribe(api_client, "anything").status_code == 401
+
+
+def test_subscribe_is_throttled_for_anonymous_callers(api_client, make_api_key):
+    raw = make_api_key()
+    statuses = [_subscribe(api_client, raw).status_code for _ in range(6)]
+    assert statuses == [201] * 5 + [429]

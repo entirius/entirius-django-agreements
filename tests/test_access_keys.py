@@ -8,21 +8,27 @@
 path.
 """
 
+import os
 import secrets
 from datetime import timedelta
 from unittest.mock import patch
 
 import pytest
 
+if os.environ.get("ENTIRIUS_TEST_NO_ACCESS"):
+    pytest.skip("django_access is not installed on the legacy path", allow_module_level=True)
 pytest.importorskip("django_access")
 
+from django.core.cache import cache  # noqa: E402
 from django.urls import reverse  # noqa: E402
 from django.utils import timezone  # noqa: E402
 from django_access.models import ApiToken, Application  # noqa: E402
 from django_access.services.access_service import Actor  # noqa: E402
 from django_access.services.tokens import hash_key, issue_token, revoke_token  # noqa: E402
+from rest_framework.request import Request  # noqa: E402
+from rest_framework.test import APIRequestFactory  # noqa: E402
 
-from django_agreements.api.public.authentication import SUBSCRIBE_SCOPE  # noqa: E402
+from django_agreements.api.public.authentication import SUBSCRIBE_SCOPE, APIKeyAuthentication  # noqa: E402
 
 pytestmark = pytest.mark.django_db
 
@@ -95,28 +101,65 @@ def test_imported_setting_without_expiry_keeps_working(api_client, make_api_key)
 
 def test_admin_key_header_never_stands_in(api_client, issue):
     _, raw = issue()
+    missing = _subscribe(api_client, None)
+    url = reverse("public-newsletter-subscribe", kwargs={"channel_idx": CHANNEL})
+    response = api_client.post(
+        url,
+        {"email": "subscriber@example.com"},
+        format="json",
+        HTTP_X_API_KEY="ent_api_" + secrets.token_urlsafe(32),
+        HTTP_X_API_ADMIN_KEY=raw,
+    )
+    assert response.status_code == 401
+    assert response.content == missing.content
+
+
+def test_valid_token_in_admin_header_alone_is_refused(api_client, issue):
+    _, raw = issue()
     assert _subscribe(api_client, raw, header="HTTP_X_API_ADMIN_KEY").status_code == 401
 
 
-def _failing_keys(issue) -> dict[str, str]:
-    """The five ways a key fails, each a real token except ``unknown``."""
+def test_customer_jwt_with_a_revoked_token_subscribes(user_client, issue):
+    token, raw = issue()
+    revoke_token(token, actor=SYSTEM)
+    assert _subscribe(user_client, raw).status_code == 201
+
+
+def test_success_sets_the_access_token_on_the_request(issue):
+    token, raw = issue()
+    request = Request(APIRequestFactory().post("/", HTTP_X_API_KEY=raw), parsers=None)
+    request.parser_context = {"kwargs": {"channel_idx": CHANNEL}}
+    assert APIKeyAuthentication().authenticate(request) == (None, "api_key")
+    assert request.access_token.pk == token.pk
+
+
+def _failing_keys(issue, settings) -> dict[str, str]:
+    """The ways a key fails, each a real token except ``unknown`` and ``legacy only``."""
     expired, expired_raw = issue()
     ApiToken.objects.filter(pk=expired.pk).update(expires_at=timezone.now() - timedelta(minutes=1))
     revoked, revoked_raw = issue()
     revoke_token(revoked, actor=SYSTEM)
+    inactive = Application.objects.create(name="inactive", is_active=False)
+    _, inactive_raw = issue_token(inactive, scopes=[SUBSCRIBE_SCOPE], expires_at=None, actor=SYSTEM)
+    settings.AGREEMENTS_API_KEY = secrets.token_hex(32)  # set, never imported as a token
     return {
         "unknown": "ent_api_" + secrets.token_urlsafe(32),
+        "legacy only": settings.AGREEMENTS_API_KEY,
         "expired": expired_raw,
         "revoked": revoked_raw,
+        "application inactive": inactive_raw,
         "wrong scope": issue("contact_forms.submit")[1],
         "wrong channel": issue(channel_idx=OTHER)[1],
     }
 
 
-def test_every_failure_gives_the_no_key_response(api_client, issue):
+def test_every_failure_gives_the_no_key_response(api_client, issue, settings):
     missing = _subscribe(api_client, None)
     expected = (missing.status_code, missing.content)
-    outcomes = {kind: _subscribe(api_client, raw) for kind, raw in _failing_keys(issue).items()}
+    outcomes = {}
+    for kind, raw in _failing_keys(issue, settings).items():
+        cache.clear()  # eight refused calls would otherwise reach the 5/min subscribe throttle
+        outcomes[kind] = _subscribe(api_client, raw)
     answers = {kind: (response.status_code, response.content) for kind, response in outcomes.items()}
     assert set(answers.values()) == {expected}, answers
     assert expected[0] == 401

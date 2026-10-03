@@ -261,15 +261,13 @@ class TestAPIKeyAuth:
         response = api_client.post(url, {"email": "test@test.com"}, format="json", HTTP_X_API_KEY="wrong-key")
         assert response.status_code == 401
 
-    @pytest.mark.skip(reason="Patches a hook removed when confirmation email moved to a module-level helper")
     def test_subscribe_with_valid_api_key_returns_201(
-        self, api_client, marketing_definition, marketing_published_version
+        self, api_client, make_api_key, marketing_definition, marketing_published_version
     ):
         """Valid API key allows subscribe."""
         url = _subscribe_url("default-europe")
-        patch_target = "django_agreements.api.public.views.consent_views.PublicConsentViewSet._send_confirmation_email"
-        with patch(patch_target):
+        with patch("django_agreements.api.public.views.consent_views._send_confirmation_email"):
             response = api_client.post(
-                url, {"email": "apikey-test@test.com"}, format="json", HTTP_X_API_KEY="test-api-key"
+                url, {"email": "apikey-test@test.com"}, format="json", HTTP_X_API_KEY=make_api_key()
             )
         assert response.status_code == 201

@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import os
 import tempfile
 from importlib.util import find_spec
 
@@ -31,7 +32,7 @@ INSTALLED_APPS = [
     "django_agreements",
 ]
 # Soft dependency: with django-access importable (zeno) the key is checked as an access token.
-if find_spec("django_access"):
+if find_spec("django_access") and not os.environ.get("ENTIRIUS_TEST_NO_ACCESS"):
     INSTALLED_APPS.append("django_access")
 
 MIDDLEWARE = [
@@ -84,5 +85,3 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 ROOT_URLCONF = "django_agreements.urls"
-
-AGREEMENTS_API_KEY = "test-api-key"

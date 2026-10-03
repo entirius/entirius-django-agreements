@@ -94,6 +94,12 @@ class PublicConsentViewSet(viewsets.ViewSet):
     authentication_classes = [JWTAuthentication, APIKeyAuthentication]
     permission_classes = [AllowAny]
 
+    def get_throttles(self) -> list:
+        # as_view({...}) routing ignores @action(throttle_classes=...), so the subscribe throttle is applied here.
+        if self.action == "subscribe":
+            return [SubscribeThrottle()]
+        return super().get_throttles()
+
     @extend_schema(
         summary="Submit consent",
         description=(

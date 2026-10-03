@@ -7,10 +7,16 @@ import secrets
 import pytest
 from django.apps import apps
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from django_agreements.models import AgreementDefinition, AgreementVersion, Channel
+
+
+@pytest.fixture(autouse=True)
+def _clear_throttle_cache():
+    cache.clear()
 
 
 @pytest.fixture
