@@ -41,6 +41,7 @@ class DefinitionViewSet(viewsets.ViewSet):
 
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAdminUser]
+    access_area = "agreements.definitions"
 
     @extend_schema(
         summary="List agreement definitions",

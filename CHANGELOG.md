@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Access: the module declares its own access areas on its AppConfig and its admin views (copied from the
+  entirius-django-access defaults; behaviour unchanged).
 - The newsletter subscribe key is verified by django-access when installed: `APIKeyAuthentication` accepts an access
   token with scope `agreements.subscribe` (channel pin included) and never compares `AGREEMENTS_API_KEY`, which lives
   on as an imported legacy token. Without django-access nothing changes.
