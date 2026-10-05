@@ -17,12 +17,12 @@ from rest_framework.exceptions import AuthenticationFailed, ParseError
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.throttling import AnonRateThrottle
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from django_agreements import settings as agreements_settings
 from django_agreements.api import raise_pydantic_as_drf
 from django_agreements.api.public.authentication import APIKeyAuthentication
+from django_agreements.api.public.throttling import ConsentSubmitThrottle, SubscribeThrottle, TokenActionThrottle
 from django_agreements.schemas.requests.consent import (
     ConsentSubmitRequest,
     ConsentWithdrawRequest,
@@ -76,16 +76,14 @@ def _send_confirmation_email(email: str, channel_idx: str, language: str | None)
         logger.exception(exc)
 
 
-class SubscribeThrottle(AnonRateThrottle):
-    rate = "5/min"
-
-
-class ConsentSubmitThrottle(AnonRateThrottle):
-    rate = "20/min"
-
-
-class TokenActionThrottle(AnonRateThrottle):
-    rate = "10/min"
+# as_view({...}) routing ignores @action(throttle_classes=...): every public action is mapped here.
+_ACTION_THROTTLES = {
+    "create": ConsentSubmitThrottle,
+    "withdraw": ConsentSubmitThrottle,
+    "subscribe": SubscribeThrottle,
+    "confirm": TokenActionThrottle,
+    "unsubscribe": TokenActionThrottle,
+}
 
 
 class PublicConsentViewSet(viewsets.ViewSet):
@@ -95,9 +93,8 @@ class PublicConsentViewSet(viewsets.ViewSet):
     permission_classes = [AllowAny]
 
     def get_throttles(self) -> list:
-        # as_view({...}) routing ignores @action(throttle_classes=...), so the subscribe throttle is applied here.
-        if self.action == "subscribe":
-            return [SubscribeThrottle()]
+        if throttle := _ACTION_THROTTLES.get(self.action):
+            return [throttle()]
         return super().get_throttles()
 
     @extend_schema(
@@ -116,7 +113,7 @@ class PublicConsentViewSet(viewsets.ViewSet):
         ],
         responses={201: {"description": "Consent recorded"}, 400: {"description": "Validation error"}},
     )
-    @action(detail=False, methods=["post"], throttle_classes=[ConsentSubmitThrottle])
+    @action(detail=False, methods=["post"])
     def create(self, request: Request, channel_idx: str, **kwargs) -> Response:
         try:
             data = ConsentSubmitRequest(**request.data)
@@ -191,7 +188,7 @@ class PublicConsentViewSet(viewsets.ViewSet):
             401: {"description": "Authentication required"},
         },
     )
-    @action(detail=False, methods=["post"], throttle_classes=[ConsentSubmitThrottle])
+    @action(detail=False, methods=["post"])
     def withdraw(self, request: Request, channel_idx: str, **kwargs) -> Response:
         if not (request.user and request.user.is_authenticated):
             return Response(
@@ -246,7 +243,7 @@ class PublicConsentViewSet(viewsets.ViewSet):
             400: {"description": "Validation error"},
         },
     )
-    @action(detail=False, methods=["post"], throttle_classes=[SubscribeThrottle])
+    @action(detail=False, methods=["post"])
     def subscribe(self, request: Request, channel_idx: str, **kwargs) -> Response:
         is_authenticated = request.user and request.user.is_authenticated
         if not is_authenticated and request.auth != "api_key":
@@ -284,7 +281,7 @@ class PublicConsentViewSet(viewsets.ViewSet):
         ],
         responses={200: {"description": "Consent confirmed"}, 400: {"description": "Invalid or expired token"}},
     )
-    @action(detail=False, methods=["post"], throttle_classes=[TokenActionThrottle])
+    @action(detail=False, methods=["post"])
     def confirm(self, request: Request, channel_idx: str, **kwargs) -> Response:
         try:
             data = TokenRequest(**request.data)
@@ -318,7 +315,7 @@ class PublicConsentViewSet(viewsets.ViewSet):
         ],
         responses={200: {"description": "Consent revoked"}, 400: {"description": "Invalid or expired token"}},
     )
-    @action(detail=False, methods=["get"], throttle_classes=[TokenActionThrottle])
+    @action(detail=False, methods=["get"])
     def unsubscribe(self, request: Request, channel_idx: str, **kwargs) -> Response:
         token = request.query_params.get("token")
         if not token:
