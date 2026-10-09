@@ -2,9 +2,16 @@
 
 ## Unreleased
 
+- Access: the module declares its own access areas on its AppConfig and its admin views (copied from the
+  entirius-django-access defaults; behaviour unchanged).
 - The newsletter subscribe key is verified by django-access when installed: `APIKeyAuthentication` accepts an access
   token with scope `agreements.subscribe` (channel pin included) and never compares `AGREEMENTS_API_KEY`, which lives
   on as an imported legacy token. Without django-access nothing changes.
+- Every public consent action that creates state or sends mail is throttled per address: `consents/` and
+  `consents/withdraw/` (scope `agreements_consent`, 20/min), `newsletter/subscribe/` (`agreements_subscribe`,
+  5/min), `consents/confirm/` and `consents/unsubscribe/` (`agreements_token`, 10/min). Before, only subscribe was.
+  `DEFAULT_THROTTLE_RATES[<scope>]` overrides a rate; the class fallback holds when it is missing or malformed.
+- The legacy `AGREEMENTS_API_KEY` comparison is constant-time (`secrets.compare_digest`).
 
 ## 2.1.0 — 2026-09-15
 

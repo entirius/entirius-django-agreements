@@ -9,6 +9,7 @@ With ``django_access`` installed the key is an access token with scope ``agreeme
 compared on that path. Without the module: the ``AGREEMENTS_API_KEY`` setting, as before.
 """
 
+import secrets
 from types import SimpleNamespace
 
 from django.apps import apps
@@ -36,7 +37,7 @@ def _key_is_valid(request, key: str) -> bool:
     if apps.is_installed("django_access"):
         return _token_is_valid(request, key)
     expected = getattr(django_settings, "AGREEMENTS_API_KEY", "")
-    return bool(expected) and key == expected
+    return bool(expected) and secrets.compare_digest(key.encode(), expected.encode())
 
 
 def _token_is_valid(request, key: str) -> bool:
