@@ -12,6 +12,8 @@
   5/min), `consents/confirm/` and `consents/unsubscribe/` (`agreements_token`, 10/min). Before, only subscribe was.
   `DEFAULT_THROTTLE_RATES[<scope>]` overrides a rate; the class fallback holds when it is missing or malformed.
 - The legacy `AGREEMENTS_API_KEY` comparison is constant-time (`secrets.compare_digest`).
+- OpenAPI: URL examples use `https://api.example.com` and `https://shop.example.com` instead of `localhost`.
+  Metadata only.
 
 ## 2.1.0 — 2026-09-15
 

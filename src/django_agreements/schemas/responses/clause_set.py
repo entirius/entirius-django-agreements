@@ -27,7 +27,7 @@ class ClauseSetListResponse(BaseModel):
     next: str | None = Field(
         None,
         description="URL of next page",
-        examples=["http://localhost:8000/api/agreements/v2/admin/clause-sets/?page=2"],
+        examples=["https://api.example.com/api/agreements/v2/admin/clause-sets/?page=2"],
     )
     previous: str | None = Field(None, description="URL of previous page", examples=[None])
     results: list[ClauseSetResponse] = Field(description="List of clause sets", examples=[[]])
