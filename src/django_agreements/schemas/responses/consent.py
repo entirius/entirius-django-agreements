@@ -99,7 +99,9 @@ class MarketingSubscriberResponse(BaseModel):
     email: str = Field(description="Subscriber email", examples=["user@example.com"])
     agreement_slug: str = Field(description="Agreement definition slug", examples=["marketing-email"])
     agreement_name: str = Field(description="Agreement name", examples=["Email Marketing Consent"])
-    consent_channel: str = Field(description="Channel where consent was given", examples=["checkout"])
+    consent_channel: str = Field(
+        description="Consent channel of the agreement (email, sms, push, web, general)", examples=["email"]
+    )
     granted_at: datetime = Field(description="When consent was granted", examples=["2024-06-01T12:00:00Z"])
     channel_idx: str = Field(description="Channel identifier", examples=["default-europe"])
 

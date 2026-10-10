@@ -13,6 +13,7 @@ from django_agreements.api.admin.views.consent_views import (
     PeopleViewSet,
 )
 from django_agreements.api.admin.views.content_history_views import ContentHistoryViewSet
+from django_agreements.api.admin.views.cookie_consent_views import CookieConsentViewSet
 from django_agreements.api.admin.views.definition_views import DefinitionViewSet
 from django_agreements.api.admin.views.token_views import TokenViewSet
 from django_agreements.api.admin.views.version_views import VersionDetailViewSet, VersionViewSet
@@ -49,6 +50,24 @@ urlpatterns = [
     # Consent records (read-only, kept for backward compat)
     path("consents/", ConsentViewSet.as_view({"get": "list"}), name="admin-consent-list"),
     path("consents/<str:email>/history/", ConsentViewSet.as_view({"get": "history"}), name="admin-consent-history"),
+    # Cookie consent log (export/ and stats/ before <uuid:consent_id>/)
+    path("cookie-consents/", CookieConsentViewSet.as_view({"get": "list"}), name="admin-cookie-consent-list"),
+    path(
+        "cookie-consents/export/",
+        CookieConsentViewSet.as_view({"get": "export"}),
+        name="admin-cookie-consent-export",
+    ),
+    path("cookie-consents/stats/", CookieConsentViewSet.as_view({"get": "stats"}), name="admin-cookie-consent-stats"),
+    path(
+        "cookie-consents/<uuid:consent_id>/",
+        CookieConsentViewSet.as_view({"get": "history"}),
+        name="admin-cookie-consent-history",
+    ),
+    path(
+        "cookie-consents/<uuid:consent_id>/erase/",
+        CookieConsentViewSet.as_view({"post": "erase"}),
+        name="admin-cookie-consent-erase",
+    ),
     # Order agreements (read-only)
     path(
         "orders/<str:order_id>/agreements/",

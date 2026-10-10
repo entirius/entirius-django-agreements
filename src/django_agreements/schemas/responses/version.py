@@ -8,6 +8,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from django_agreements.schemas.requests.version import COOKIE_BANNER_EXAMPLE
+
 
 class VersionResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -24,6 +26,10 @@ class VersionResponse(BaseModel):
         None, description="Publication timestamp (null = draft)", examples=["2024-06-01T12:00:00Z"]
     )
     is_current: bool = Field(description="Whether this is the current published version", examples=[True])
+    cookie_banner: dict = Field(
+        description="Cookie banner config (categories, buttons); {} unless category=cookies",
+        examples=[COOKIE_BANNER_EXAMPLE],
+    )
     created_at: datetime = Field(description="Creation timestamp", examples=["2024-06-01T00:00:00Z"])
 
 

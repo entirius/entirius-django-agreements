@@ -2,12 +2,21 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import secrets
+
 import pytest
+from django.apps import apps
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from django_agreements.models import AgreementDefinition, AgreementVersion, Channel
+
+
+@pytest.fixture(autouse=True)
+def _clear_throttle_cache():
+    cache.clear()
 
 
 @pytest.fixture
@@ -140,3 +149,89 @@ def make_clause_set(channel):
         )
 
     return _make
+
+
+def _cookie_banner(languages=("pl", "en")) -> dict:
+    """A valid cookie banner config with texts in `languages`."""
+
+    def t9n(text):
+        return {lang: f"{text} {lang}" for lang in languages}
+
+    buttons = {"accept_all": "Accept all", "reject_all": "Reject all", "customize": "Settings", "save": "Save"}
+    return {
+        "categories": [
+            {
+                "key": "necessary",
+                "required": True,
+                "consent_mode": [],
+                "label_t9n": t9n("Necessary"),
+                "description_t9n": t9n("Always on"),
+            },
+            {
+                "key": "analytics",
+                "required": False,
+                "consent_mode": ["analytics_storage"],
+                "label_t9n": t9n("Analytics"),
+                "description_t9n": t9n("Site usage"),
+            },
+        ],
+        "buttons_t9n": {lang: dict(buttons) for lang in languages},
+        "texts_t9n": {lang: {"preferences_title": f"Settings {lang}", "close_label": "Close"} for lang in languages},
+    }
+
+
+@pytest.fixture
+def cookie_banner():
+    """Builder of a valid cookie banner config: cookie_banner(languages=("pl", "en"))."""
+    return _cookie_banner
+
+
+@pytest.fixture
+def cookie_definition(db):
+    """A global (no channels) cookies definition."""
+    return AgreementDefinition.objects.create(
+        slug="cookie-banner", name="Cookie banner", category="cookies", consent_channel="web", sort_order=100
+    )
+
+
+@pytest.fixture
+def make_cookie_version(db):
+    """Create a cookies version with a valid banner; published + current unless published=False."""
+
+    def _make(definition, published=True, languages=("pl", "en"), **overrides):
+        from django.utils import timezone
+
+        last = definition.versions.order_by("-version_number").first()
+        fields = {
+            "definition": definition,
+            "version_number": last.version_number + 1 if last else 1,
+            "summary_t9n": {lang: f"We use cookies {lang}" for lang in languages},
+            "cookie_banner": _cookie_banner(languages),
+            "published_at": timezone.now() if published else None,
+            "is_current": published,
+        }
+        return AgreementVersion.objects.create(**{**fields, **overrides})
+
+    return _make
+
+
+@pytest.fixture
+def make_api_key(settings):
+    """Configure the key the module accepts today and return its raw value.
+
+    agreements has one key, ``settings.AGREEMENTS_API_KEY`` — not bound to a channel or a scope, so both
+    arguments are accepted and ignored. The key contract tests go through this helper only, so moving the check
+    onto another key store changes this function, never the assertions. With django_access installed the setting is
+    also imported as a legacy token, as a deploy's migrate does. Values are random and never printed.
+    """
+
+    def make_api_key(channel=None, scope: str | None = None) -> str:
+        raw = secrets.token_hex(32)
+        settings.AGREEMENTS_API_KEY = raw
+        if apps.is_installed("django_access"):
+            from django_access.services.legacy import import_legacy_keys
+
+            import_legacy_keys()
+        return raw
+
+    return make_api_key

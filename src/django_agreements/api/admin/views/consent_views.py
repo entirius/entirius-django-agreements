@@ -35,6 +35,7 @@ class ConsentViewSet(viewsets.ViewSet):
 
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAdminUser]
+    access_area = "agreements.consents"
 
     @extend_schema(
         summary="List consent records",
@@ -113,6 +114,7 @@ class PeopleViewSet(viewsets.ViewSet):
 
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAdminUser]
+    access_area = "agreements.consents"
 
     @extend_schema(
         summary="List consent people",
@@ -181,7 +183,7 @@ def _csv_rows(queryset):
         row = (
             f"{_csv_safe(record.email)},"
             f"{_csv_safe(record.agreement_version.definition.slug)},"
-            f"{_csv_safe(record.channel_idx)},"
+            f"{_csv_safe(record.agreement_version.definition.consent_channel)},"
             f"{record.created_at.isoformat()},"
             f"{_csv_safe(record.channel_idx)}\r\n"
         )
@@ -194,6 +196,7 @@ class MarketingSubscribersViewSet(viewsets.ViewSet):
 
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAdminUser]
+    access_area = "agreements.consents"
     pagination_class = AdminPageNumberPagination
 
     @property
@@ -237,7 +240,7 @@ class MarketingSubscribersViewSet(viewsets.ViewSet):
                 email=record.email,
                 agreement_slug=record.agreement_version.definition.slug,
                 agreement_name=record.agreement_version.definition.name,
-                consent_channel=record.channel_idx,
+                consent_channel=record.agreement_version.definition.consent_channel,
                 granted_at=record.created_at,
                 channel_idx=record.channel_idx,
             ).model_dump()
@@ -277,6 +280,7 @@ class OrderAgreementViewSet(viewsets.ViewSet):
 
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAdminUser]
+    access_area = "agreements.consents"
 
     @extend_schema(
         summary="Get order agreement snapshots",

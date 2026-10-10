@@ -18,9 +18,11 @@ per-order acceptance snapshots.
 - Per-order text freeze via OrderAgreementSnapshot
 - Channel scoping — agreements can be global or restricted to specific storefronts
 - Full legal text stored in ContentDB (mandatory agreements) or inline (marketing)
-- Emits `consent_changed_signal` for downstream integrations (double opt-in, unsubscribe)
+- Emits `consent_changed` when a double opt-in link is confirmed or an unsubscribe link is used
 - Versioned legal clause sets per channel × legal basis × language, and an append-only objection log
 - GDPR export and erasure hooks for the consent, objection and order snapshot rows
+- Cookie consent: banner configuration on `cookies` agreement versions, an anonymous append-only decision log
+  (`CookieConsent`), admin list/export/stats/erasure and a retention purge command
 
 ## Architecture
 
@@ -28,11 +30,13 @@ per-order acceptance snapshots.
 Admin API (/api/agreements/v2/admin/)
   → AgreementDefinition + AgreementVersion management
   → ConsentRecord read-only log
+  → Cookie consent log: cookie-consents/ · export/ · stats/ · {consent_id}/ · {consent_id}/erase/
 
 Public API (/api/agreements/v2/{channel_idx}/)
   → Definitions (active + published, language-resolved)
   → Consent submit / status / withdraw
   → Order agreement record
+  → Cookie banner (GET cookie-banner/) and decision log (POST cookie-consents/)
 ```
 
 ## Default Agreement Types
@@ -48,6 +52,9 @@ Shipped via `fixtures/default_agreements.yaml`:
 | `marketing-push` | marketing | push |
 
 All ship as drafts. Admin must set `summary_t9n` and publish before use.
+
+The cookie banner ships separately (`fixtures/cookie_banner.yaml`, slug `cookie-banner`, category `cookies`, PL/EN
+draft) — see [Cookie Consent](/volkanos/modules/agreements/cookie-consent/).
 
 ## Legal Clauses
 
@@ -107,5 +114,6 @@ order-retention obligation.
 - [Master Data Architecture](/volkanos/modules/agreements/master-data/) — entity roles, versioning, channel scoping, signal integration
 - [Database Diagrams](/volkanos/modules/agreements/erd/) — auto-generated ER diagrams
 - [Legal Pages](/volkanos/modules/agreements/legal-pages/) — content structure, versioning, consent-to-text traceability
-- [Signals](/volkanos/modules/agreements/signals/) — `consent_changed_signal` contract and receiver patterns
+- [Cookie Consent](/volkanos/modules/agreements/cookie-consent/) — banner configuration, front-end contract, admin API, GDPR, retention
+- [Signals](/volkanos/modules/agreements/signals/) — `consent_changed` contract and a receiver example
 - [Configuration](/volkanos/modules/agreements/configuration/) — Django settings

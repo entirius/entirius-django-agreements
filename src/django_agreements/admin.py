@@ -10,6 +10,7 @@ from django_agreements.models import (
     Channel,
     ClauseSet,
     ConsentRecord,
+    CookieConsent,
     ObjectionEvent,
     OrderAgreementSnapshot,
 )
@@ -56,6 +57,23 @@ class ConsentRecordAdmin(admin.ModelAdmin):
         "channel_idx",
         "created_at",
     )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(CookieConsent)
+class CookieConsentAdmin(admin.ModelAdmin):
+    list_display = ("created_at", "consent_id", "channel_idx", "language", "action", "agreement_version")
+    list_filter = ("action", "channel_idx", "language")
+    search_fields = ["consent_id"]
+    list_select_related = ("agreement_version__definition",)
 
     def has_add_permission(self, request):
         return False
