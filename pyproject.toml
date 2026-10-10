@@ -1,6 +1,6 @@
 [project]
 name = "entirius-django-agreements"
-version = "2.1.0"
+version = "2.2.0"
 description = "Consent & Agreements module for Volkanos — GDPR-compliant agreement versioning and consent tracking"
 authors = [{ name = "Entirius" }]
 readme = "README.md"
