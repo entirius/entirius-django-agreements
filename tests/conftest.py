@@ -2,7 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import secrets
+
 import pytest
+from django.apps import apps
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from rest_framework.test import APIClient
@@ -12,10 +15,7 @@ from django_agreements.models import AgreementDefinition, AgreementVersion, Chan
 
 
 @pytest.fixture(autouse=True)
-def _clear_cache():
-    """Throttle counters live in the process-wide cache — isolate every test."""
-    cache.clear()
-    yield
+def _clear_throttle_cache():
     cache.clear()
 
 
@@ -176,6 +176,7 @@ def _cookie_banner(languages=("pl", "en")) -> dict:
             },
         ],
         "buttons_t9n": {lang: dict(buttons) for lang in languages},
+        "texts_t9n": {lang: {"preferences_title": f"Settings {lang}", "close_label": "Close"} for lang in languages},
     }
 
 
@@ -212,3 +213,25 @@ def make_cookie_version(db):
         return AgreementVersion.objects.create(**{**fields, **overrides})
 
     return _make
+
+
+@pytest.fixture
+def make_api_key(settings):
+    """Configure the key the module accepts today and return its raw value.
+
+    agreements has one key, ``settings.AGREEMENTS_API_KEY`` — not bound to a channel or a scope, so both
+    arguments are accepted and ignored. The key contract tests go through this helper only, so moving the check
+    onto another key store changes this function, never the assertions. With django_access installed the setting is
+    also imported as a legacy token, as a deploy's migrate does. Values are random and never printed.
+    """
+
+    def make_api_key(channel=None, scope: str | None = None) -> str:
+        raw = secrets.token_hex(32)
+        settings.AGREEMENTS_API_KEY = raw
+        if apps.is_installed("django_access"):
+            from django_access.services.legacy import import_legacy_keys
+
+            import_legacy_keys()
+        return raw
+
+    return make_api_key

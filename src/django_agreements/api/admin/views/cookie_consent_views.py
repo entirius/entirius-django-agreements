@@ -144,6 +144,7 @@ class CookieConsentViewSet(viewsets.ViewSet):
 
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAdminUser]
+    access_area = "agreements.consents"
 
     @extend_schema(
         summary="List cookie consents",

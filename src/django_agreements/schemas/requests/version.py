@@ -88,6 +88,10 @@ COOKIE_BANNER_EXAMPLE = {
             "save": "Zapisz wybór",
         },
     },
+    "texts_t9n": {
+        "en": {"preferences_title": "Cookie settings", "close_label": "Close"},
+        "pl": {"preferences_title": "Ustawienia plików cookie", "close_label": "Zamknij"},
+    },
 }
 
 
@@ -139,6 +143,18 @@ class CookieBannerButtons(BaseModel):
         return sanitize_html(v)
 
 
+class CookieBannerTexts(BaseModel):
+    preferences_title: str = Field(
+        min_length=1, description="Title of the category settings dialog", examples=["Cookie settings"]
+    )
+    close_label: str = Field(min_length=1, description="Accessible label of the close (X) button", examples=["Close"])
+
+    @field_validator("preferences_title", "close_label")
+    @classmethod
+    def validate_text(cls, v: str) -> str:
+        return sanitize_html(v)
+
+
 class CookieBannerConfig(BaseModel):
     """Cookie banner configuration of a `cookies` agreement version. Banner body text = summary_t9n."""
 
@@ -147,6 +163,10 @@ class CookieBannerConfig(BaseModel):
     )
     buttons_t9n: dict[str, CookieBannerButtons] = Field(
         min_length=1, description="Button labels per language", examples=[COOKIE_BANNER_EXAMPLE["buttons_t9n"]]
+    )
+    texts_t9n: dict[str, CookieBannerTexts] = Field(
+        description="Settings dialog title and close button label per language (languages of buttons_t9n)",
+        examples=[COOKIE_BANNER_EXAMPLE["texts_t9n"]],
     )
 
     @field_validator("buttons_t9n")
@@ -163,6 +183,8 @@ class CookieBannerConfig(BaseModel):
         if len(keys) != len(set(keys)):
             raise ValueError("Category keys must be unique.")
         languages = self.languages
+        if set(self.texts_t9n) != languages:
+            raise ValueError(f"texts_t9n must have texts in exactly {sorted(languages)}.")
         for category in self.categories:
             if set(category.label_t9n) != languages or set(category.description_t9n) != languages:
                 raise ValueError(f"Category '{category.key}' must have texts in exactly {sorted(languages)}.")

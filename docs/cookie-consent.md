@@ -66,12 +66,18 @@ Create and edit versions through the admin API (`POST definitions/{slug}/version
   "buttons_t9n": {
     "pl": {"accept_all": "Akceptuj wszystkie", "reject_all": "Odrzuć wszystkie", "customize": "Ustawienia", "save": "Zapisz wybór"},
     "en": {"accept_all": "Accept all", "reject_all": "Reject all", "customize": "Settings", "save": "Save choices"}
+  },
+  "texts_t9n": {
+    "pl": {"preferences_title": "Ustawienia plików cookie", "close_label": "Zamknij"},
+    "en": {"preferences_title": "Cookie settings", "close_label": "Close"}
   }
 }
 ```
 
 Validation: category keys are unique, lowercase (`^[a-z][a-z0-9_]{1,31}$`); every category has a label and a
-description in exactly the languages of `buttons_t9n`; all four button labels are non-empty; a required category
+description in exactly the languages of `buttons_t9n`; all four button labels are non-empty; `texts_t9n` has a
+non-empty `preferences_title` (settings dialog title) and `close_label` (accessible label of the close button) in
+exactly the same languages; a required category
 carries no `consent_mode` signals; signals are unique per category.
 
 ### Google Consent Mode
@@ -132,13 +138,17 @@ Public endpoints, no authentication (no JWT, no `X-API-KEY`):
 Flow:
 
 1. **GET** the banner. Language: `language` → channel default language (each only when both the banner and the
-   channel have it) → first banner language. Render `text`, `buttons` and `categories`; texts are already sanitised (limited HTML).
+   channel have it) → first banner language. Render `text`, `buttons`, `preferences_title`, `close_label` and
+   `categories`; texts are already sanitised (limited HTML). `preferences_title` and `close_label` are `null` for a
+   banner config without `texts_t9n` — keep a front-end fallback for them.
 2. On the first decision, generate a UUID v4 as `consent_id` and keep it in a first-party cookie for
    `max_age_days` days, together with the `revision`.
 3. **POST** the decision with `revision` and `language` echoed from the GET response. `categories` lists every
    banner category; required ones are `true`; `accept_all` = all `true`; `reject_all` and `withdraw` = every
    optional one `false`.
-4. **409 `STALE_REVISION`** — a newer banner was published: GET it again and ask the visitor again.
+4. **409 `STALE_REVISION`** — a newer banner was published: GET it again bypassing the HTTP cache
+   (`fetch(url, {cache: "no-store"})`) and ask the visitor again. A 200 GET is sent with
+   `Cache-Control: public, max-age=300`, so a plain refetch can return the old revision for up to 5 minutes.
 5. A failed GET means **no consent**: keep every non-necessary tag denied.
 6. A stored `revision` different from the current one also means the visitor must be asked again.
 
@@ -155,6 +165,8 @@ GET /api/agreements/v2/default-europe/cookie-banner/?language=en
   "max_age_days": 365,
   "text": "We use cookies. … <a href=\"/en/cookie-policy\">Cookie policy</a>",
   "buttons": {"accept_all": "Accept all", "reject_all": "Reject all", "customize": "Settings", "save": "Save choices"},
+  "preferences_title": "Cookie settings",
+  "close_label": "Close",
   "categories": [
     {"key": "necessary", "required": true, "consent_mode": [], "label": "Necessary", "description": "Keep the site working…"},
     {"key": "analytics", "required": false, "consent_mode": ["analytics_storage"], "label": "Analytics", "description": "…"},
@@ -188,13 +200,16 @@ Content-Type: application/json
 }
 ```
 
-Errors use the v2 envelope (`error`, `message`, `debug_id`, `details`):
+Errors of both endpoints use the v2 envelope (`error`, `message`, `debug_id`, `details`), e.g.
+`{"error": "STALE_REVISION", "message": "Cookie banner revision is outdated — fetch cookie-banner again.",
+"debug_id": "a1b2c3d4", "details": []}`. `VALIDATION_ERROR` lists one `{field, location, issue, description}` per
+problem in `details`:
 
 | Status | `error` | When |
 |---|---|---|
 | 400 | `VALIDATION_ERROR` | malformed body: `consent_id` not a UUID, `revision` < 1, `language` not two letters, unknown `action`, empty `categories` (field details in `details`) |
 | 400 | `INVALID_REQUEST` | the decision does not fit the banner: language not in the banner or the channel, categories missing or unknown, a required category `false`, `action` contradicting `categories` |
-| 404 | `NOT_FOUND` | unknown channel or no published banner for it |
+| 404 | `NOT_FOUND` | unknown channel or no published banner for it (GET and POST) |
 | 409 | `STALE_REVISION` | `revision` is not the current banner version |
 | 429 | `RATE_LIMITED` | POST throttle exceeded (scope `agreements_cookie_consent`, see [Configuration](/volkanos/modules/agreements/configuration/)) |
 

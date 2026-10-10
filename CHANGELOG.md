@@ -5,12 +5,15 @@
 - Cookie consent: `CookieConsent`, an append-only anonymous log of cookie banner decisions (`consent_id` UUID,
   channel, language, banner version, categories, action; no IP, user agent or URL).
 - Cookie banner config on agreement versions: category `cookies`, `AgreementVersion.cookie_banner` (categories with
-  Google Consent Mode signals, button labels per language); publish refuses a banner whose languages differ from
+  Google Consent Mode signals, button labels and settings dialog texts `preferences_title` / `close_label` per
+  language in `texts_t9n`); publish refuses a banner whose languages differ from
   `summary_t9n` or miss a channel language, and a second active `cookies` definition for the same channel scope.
 - Public API v2: `GET {channel_idx}/cookie-banner/` (channel-specific banner beats the global one, language
   fallback) and `POST {channel_idx}/cookie-consents/` (throttle scope `agreements_cookie_consent`, fallback `30/min`;
-  409 `STALE_REVISION` when the banner revision is outdated).
-- Admin API v2: `GET cookie-consents/` (filters, pagination), `export/` (CSV), `stats/` (per UTC day, revision,
+  409 `STALE_REVISION` when the banner revision is outdated). Both endpoints answer errors in the v2 envelope
+  (`VALIDATION_ERROR`, `INVALID_REQUEST`, `NOT_FOUND`, `STALE_REVISION`, `RATE_LIMITED`); a 200 banner is sent
+  with `Cache-Control: public, max-age=300`.
+- Admin API v2 (access area `agreements.consents`): `GET cookie-consents/` (filters, pagination), `export/` (CSV), `stats/` (per UTC day, revision,
   language, action), `{consent_id}/` (history), `POST {consent_id}/erase/` (GDPR erasure: one new random id);
   read-only Django admin for the log.
 - Management command `purge_cookie_consents` (`--days`, `--dry-run`); refuses a retention shorter than the consent
@@ -26,6 +29,16 @@
   shop channel).
 - Docs: `cookie-consent.md`; `signals.md` corrected to the code (`consent_changed`, sent only by the confirmation
   and unsubscribe links); `master-data.md` source values and dependency map corrected; ERD with `CookieConsent`.
+- Access: the module declares its own access areas on its AppConfig and its admin views (copied from the
+  entirius-django-access defaults; behaviour unchanged).
+- The newsletter subscribe key is verified by django-access when installed: `APIKeyAuthentication` accepts an access
+  token with scope `agreements.subscribe` (channel pin included) and never compares `AGREEMENTS_API_KEY`, which lives
+  on as an imported legacy token. Without django-access nothing changes.
+- Every public consent action that creates state or sends mail is throttled per address: `consents/` and
+  `consents/withdraw/` (scope `agreements_consent`, 20/min), `newsletter/subscribe/` (`agreements_subscribe`,
+  5/min), `consents/confirm/` and `consents/unsubscribe/` (`agreements_token`, 10/min). Before, only subscribe was.
+  `DEFAULT_THROTTLE_RATES[<scope>]` overrides a rate; the class fallback holds when it is missing or malformed.
+- The legacy `AGREEMENTS_API_KEY` comparison is constant-time (`secrets.compare_digest`).
 
 ## 2.1.0 — 2026-09-15
 

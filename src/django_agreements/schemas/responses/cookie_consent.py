@@ -50,6 +50,14 @@ class CookieBannerResponse(BaseModel):
         description="Button labels",
         examples=[{"accept_all": "Accept all", "reject_all": "Reject all", "customize": "Settings", "save": "Save"}],
     )
+    preferences_title: str | None = Field(
+        description="Title of the category settings dialog; null for a banner without `texts_t9n`",
+        examples=["Cookie settings"],
+    )
+    close_label: str | None = Field(
+        description="Accessible label of the close (X) button; null for a banner without `texts_t9n`",
+        examples=["Close"],
+    )
     categories: list[CookieCategoryResponse] = Field(
         description="Cookie categories in display order",
         examples=[

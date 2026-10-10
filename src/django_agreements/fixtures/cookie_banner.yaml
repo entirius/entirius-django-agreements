@@ -70,6 +70,13 @@
           reject_all: Reject all
           customize: Settings
           save: Save choices
+      texts_t9n:
+        pl:
+          preferences_title: Ustawienia plików cookie
+          close_label: Zamknij
+        en:
+          preferences_title: Cookie settings
+          close_label: Close
     content_published_id: null
     published_at: null
     is_current: false

@@ -35,6 +35,13 @@ def _payload(version, **overrides):
     return {**payload, **overrides}
 
 
+def _assert_envelope(response, status, error):
+    assert response.status_code == status
+    data = response.json()
+    assert (data["error"], set(data)) == (error, {"error", "message", "debug_id", "details"})
+    return data
+
+
 @pytest.fixture
 def site_channel(channel, lang_pl, lang_en):
     """Channel with languages pl + en, default en."""
@@ -65,6 +72,8 @@ class TestCookieBanner:
             "customize": "Settings",
             "save": "Save",
         }
+        assert (data["preferences_title"], data["close_label"]) == ("Settings pl", "Close")
+        assert response["Cache-Control"] == "public, max-age=300"
         assert data["categories"][1] == {
             "key": "analytics",
             "required": False,
@@ -83,7 +92,15 @@ class TestCookieBanner:
         )
 
     def test_unknown_channel_404(self, api_client, banner):
-        assert api_client.get(_banner_url("nope")).status_code == 404
+        response = api_client.get(_banner_url("nope"))
+        _assert_envelope(response, 404, "NOT_FOUND")
+        assert "Cache-Control" not in response
+
+    def test_banner_without_texts_returns_null(self, api_client, site_channel, banner):
+        banner.cookie_banner.pop("texts_t9n")
+        banner.save(update_fields=["cookie_banner"])
+        data = api_client.get(_banner_url(site_channel.idx), {"language": "pl"}).json()
+        assert (data["preferences_title"], data["close_label"]) == (None, None)
 
     def test_no_published_banner_404(self, api_client, channel, cookie_definition, make_cookie_version):
         make_cookie_version(cookie_definition, published=False)
@@ -115,35 +132,46 @@ class TestCookieConsentSubmit:
         assert consent.categories == {"necessary": True, "analytics": False}
 
     @pytest.mark.parametrize(
-        "overrides",
+        ("overrides", "error"),
         [
-            {"consent_id": "not-a-uuid"},
-            {"action": "maybe"},
-            {"categories": {}},
-            {"categories": {"necessary": True}},
-            {"categories": {"necessary": True, "analytics": False, "marketing": False}},
-            {"categories": {"necessary": False, "analytics": False}},
-            {"action": "accept_all"},
-            {"action": "reject_all", "categories": {"necessary": True, "analytics": True}},
-            {"language": "pol"},
-            {"language": "fr"},
-            {"language": "de"},
+            ({"consent_id": "not-a-uuid"}, "VALIDATION_ERROR"),
+            ({"action": "maybe"}, "VALIDATION_ERROR"),
+            ({"categories": {}}, "VALIDATION_ERROR"),
+            ({"categories": {"necessary": True}}, "INVALID_REQUEST"),
+            ({"categories": {"necessary": True, "analytics": False, "marketing": False}}, "INVALID_REQUEST"),
+            ({"categories": {"necessary": False, "analytics": False}}, "INVALID_REQUEST"),
+            ({"action": "accept_all"}, "INVALID_REQUEST"),
+            ({"action": "reject_all", "categories": {"necessary": True, "analytics": True}}, "INVALID_REQUEST"),
+            ({"language": "pol"}, "VALIDATION_ERROR"),
+            ({"language": "fr"}, "INVALID_REQUEST"),
+            ({"language": "de"}, "INVALID_REQUEST"),
         ],
     )
-    def test_validation_400(self, api_client, site_channel, banner, overrides):
+    def test_validation_400(self, api_client, site_channel, banner, overrides, error):
         response = api_client.post(_consent_url(site_channel.idx), _payload(banner, **overrides), format="json")
-        assert response.status_code == 400
+        _assert_envelope(response, 400, error)
         assert not CookieConsent.objects.exists()
 
+    def test_validation_details(self, api_client, site_channel, banner):
+        payload = _payload(banner, consent_id="not-a-uuid")
+        response = api_client.post(_consent_url(site_channel.idx), payload, format="json")
+        data = _assert_envelope(response, 400, "VALIDATION_ERROR")
+        assert [detail["field"] for detail in data["details"]] == ["consent_id"]
+        assert data["details"][0]["location"] == "body"
+
+    def test_malformed_json_400(self, api_client, site_channel, banner):
+        response = api_client.post(_consent_url(site_channel.idx), "{", content_type="application/json")
+        _assert_envelope(response, 400, "VALIDATION_ERROR")
+
     def test_unknown_channel_404(self, api_client, banner):
-        assert api_client.post(_consent_url("nope"), _payload(banner), format="json").status_code == 404
+        response = api_client.post(_consent_url("nope"), _payload(banner), format="json")
+        _assert_envelope(response, 404, "NOT_FOUND")
 
     def test_stale_revision_409(self, api_client, site_channel, cookie_definition, banner, make_cookie_version):
         draft = make_cookie_version(cookie_definition, published=False, languages=("pl", "en", "de"))
         version_service.publish_version(pk=draft.pk)
         response = api_client.post(_consent_url(site_channel.idx), _payload(banner), format="json")
-        assert response.status_code == 409
-        assert response.data["detail"].code == "stale_revision"
+        _assert_envelope(response, 409, "STALE_REVISION")
         assert not CookieConsent.objects.exists()
 
     def test_ignores_jwt(self, user_client, site_channel, banner):
@@ -155,11 +183,10 @@ class TestCookieConsentSubmit:
 
     def test_throttled_429(self, api_client, site_channel, banner, monkeypatch):
         monkeypatch.setattr(CookieConsentThrottle, "THROTTLE_RATES", {"agreements_cookie_consent": "2/min"})
-        statuses = [
-            api_client.post(_consent_url(site_channel.idx), _payload(banner), format="json").status_code
-            for _ in range(3)
-        ]
-        assert statuses == [201, 201, 429]
+        responses = [api_client.post(_consent_url(site_channel.idx), _payload(banner), format="json") for _ in range(3)]
+        assert [response.status_code for response in responses] == [201, 201, 429]
+        _assert_envelope(responses[2], 429, "RATE_LIMITED")
+        assert "Retry-After" in responses[2]
 
 
 class TestCookieConsentThrottle:

@@ -35,6 +35,7 @@ class ConsentViewSet(viewsets.ViewSet):
 
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAdminUser]
+    access_area = "agreements.consents"
 
     @extend_schema(
         summary="List consent records",
@@ -113,6 +114,7 @@ class PeopleViewSet(viewsets.ViewSet):
 
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAdminUser]
+    access_area = "agreements.consents"
 
     @extend_schema(
         summary="List consent people",
@@ -194,6 +196,7 @@ class MarketingSubscribersViewSet(viewsets.ViewSet):
 
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAdminUser]
+    access_area = "agreements.consents"
     pagination_class = AdminPageNumberPagination
 
     @property
@@ -277,6 +280,7 @@ class OrderAgreementViewSet(viewsets.ViewSet):
 
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAdminUser]
+    access_area = "agreements.consents"
 
     @extend_schema(
         summary="Get order agreement snapshots",

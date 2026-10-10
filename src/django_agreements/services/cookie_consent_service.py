@@ -72,6 +72,15 @@ def _category_payload(category: dict, language: str) -> dict:
     }
 
 
+_TEXT_NAMES = ("preferences_title", "close_label")
+
+
+def _texts_payload(banner: dict, language: str) -> dict:
+    """Settings dialog title and close label; None for banners published before texts_t9n existed."""
+    texts = banner.get("texts_t9n", {}).get(language, {})
+    return {name: sanitize_html(texts[name]) if name in texts else None for name in _TEXT_NAMES}
+
+
 def banner_payload(version: AgreementVersion, language: str) -> dict:
     """Banner texts, buttons and categories of `version` in `language`."""
     banner = version.cookie_banner
@@ -83,6 +92,7 @@ def banner_payload(version: AgreementVersion, language: str) -> dict:
         "max_age_days": agreements_settings.COOKIE_CONSENT_MAX_AGE_DAYS,
         "text": sanitize_html(version.summary_t9n[language]),
         "buttons": {name: sanitize_html(label) for name, label in banner["buttons_t9n"][language].items()},
+        **_texts_payload(banner, language),
         "categories": [_category_payload(category, language) for category in banner["categories"]],
     }
 

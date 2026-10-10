@@ -2,25 +2,21 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-"""Throttle for the anonymous cookie consent log.
+"""Per-address throttles of the public consent endpoints — they create state and send mail.
 
-The class-level ``fallback_rate`` is the safety net — a missing or malformed
-``DEFAULT_THROTTLE_RATES["agreements_cookie_consent"]`` must never leave the
-endpoint unthrottled. The fallback must NOT live in a class-level ``rate``:
-DRF's ``SimpleRateThrottle.__init__`` only calls ``get_rate()`` when ``rate``
-is unset, so a class ``rate`` silently disables the service override.
+``DEFAULT_THROTTLE_RATES[<scope>]`` overrides a rate; the class ``fallback_rate`` is the safety net when the scope
+is unset or malformed. The fallback must not live in a class ``rate``: DRF's ``SimpleRateThrottle.__init__`` skips
+``get_rate()`` when ``rate`` is set, which would silently disable the settings override.
 """
 
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework.throttling import AnonRateThrottle
 
 
-class CookieConsentThrottle(AnonRateThrottle):
-    scope = "agreements_cookie_consent"
-    fallback_rate = "30/min"
+class _ScopedAnonThrottle(AnonRateThrottle):
+    fallback_rate: str
 
     def __init__(self) -> None:
-        # Resolve config-or-fallback BEFORE super().__init__ — DRF skips get_rate() when self.rate is set.
         self.rate = self.get_rate()
         super().__init__()
 
@@ -32,3 +28,23 @@ class CookieConsentThrottle(AnonRateThrottle):
         if not rate or "/" not in rate:  # a malformed rate must not disable throttling
             return self.fallback_rate
         return rate
+
+
+class SubscribeThrottle(_ScopedAnonThrottle):
+    scope = "agreements_subscribe"
+    fallback_rate = "5/min"
+
+
+class ConsentSubmitThrottle(_ScopedAnonThrottle):
+    scope = "agreements_consent"
+    fallback_rate = "20/min"
+
+
+class TokenActionThrottle(_ScopedAnonThrottle):
+    scope = "agreements_token"
+    fallback_rate = "10/min"
+
+
+class CookieConsentThrottle(_ScopedAnonThrottle):
+    scope = "agreements_cookie_consent"
+    fallback_rate = "30/min"

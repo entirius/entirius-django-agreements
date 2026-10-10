@@ -104,6 +104,27 @@ class TestCookieBannerSchema:
         assert response.status_code == 400
         assert "save" in str(response.json())
 
+    def test_missing_texts_returns_400(self, admin_client, cookie_definition, cookie_banner):
+        banner = cookie_banner()
+        del banner["texts_t9n"]
+        response = _create(admin_client, banner)
+        assert response.status_code == 400
+        assert "texts_t9n" in str(response.json())
+
+    def test_empty_close_label_returns_400(self, admin_client, cookie_definition, cookie_banner):
+        banner = cookie_banner()
+        banner["texts_t9n"]["pl"]["close_label"] = ""
+        response = _create(admin_client, banner)
+        assert response.status_code == 400
+        assert "close_label" in str(response.json())
+
+    def test_texts_language_mismatch_returns_400(self, admin_client, cookie_definition, cookie_banner):
+        banner = cookie_banner()
+        del banner["texts_t9n"]["en"]
+        response = _create(admin_client, banner)
+        assert response.status_code == 400
+        assert "texts_t9n" in str(response.json())
+
     def test_invalid_language_key_returns_400(self, admin_client, cookie_definition, cookie_banner):
         banner = cookie_banner(languages=("PL",))
         assert _create(admin_client, banner, summary={"pl": "Cookies"}).status_code == 400

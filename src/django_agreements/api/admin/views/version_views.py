@@ -38,6 +38,7 @@ class VersionViewSet(viewsets.ViewSet):
 
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAdminUser]
+    access_area = "agreements.definitions"
 
     @extend_schema(
         summary="List agreement versions",
@@ -101,6 +102,7 @@ class VersionDetailViewSet(viewsets.ViewSet):
 
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAdminUser]
+    access_area = "agreements.definitions"
 
     @extend_schema(
         summary="Retrieve agreement version",
