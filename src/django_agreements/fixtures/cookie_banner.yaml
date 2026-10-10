@@ -1,0 +1,84 @@
+# Default cookie banner (PL/EN) — a global `cookies` definition with one DRAFT version.
+# Load once with: python manage.py loaddata cookie_banner
+# then publish the version through the admin API (POST versions/100/publish/).
+#
+# Opt-in, not part of default_agreements. A re-load resets both rows (the version becomes a draft again);
+# later text changes are a new version, never an edit of this fixture on a live stack.
+# Texts are brand-free drafts for legal review, stored already sanitised (tests compare with sanitize_html).
+
+- model: django_agreements.agreementdefinition
+  pk: 100
+  fields:
+    slug: cookie-banner
+    name: Cookie banner
+    category: cookies
+    consent_channel: web
+    content_route: ""
+    is_active: true
+    is_system: true
+    display_contexts: []
+    sort_order: 100
+    channels: []
+    created_at: "2026-09-24T00:00:00Z"
+    modified_at: "2026-09-24T00:00:00Z"
+
+- model: django_agreements.agreementversion
+  pk: 100
+  fields:
+    definition: 100
+    version_number: 1
+    summary_t9n:
+      pl: 'Używamy plików cookie. Niezbędne działają zawsze. Analityczne i marketingowe — w tym personalizację reklam — włączymy tylko za Twoją zgodą. Zmienisz ją w każdej chwili w stopce, w sekcji Twoje zgody. <a href="/pl/polityka-cookies">Polityka cookies</a>'
+      en: 'We use cookies. Necessary cookies are always on. Analytics and marketing cookies — including ads personalisation — are used only with your consent. You can change it at any time in the footer, under Your consents. <a href="/en/cookie-policy">Cookie policy</a>'
+    cookie_banner:
+      categories:
+        - key: necessary
+          required: true
+          consent_mode: []
+          label_t9n:
+            pl: Niezbędne
+            en: Necessary
+          description_t9n:
+            pl: 'Zapewniają działanie strony i zapamiętują Twój wybór. Nie można ich wyłączyć.'
+            en: 'Keep the site working and remember your choice. They cannot be switched off.'
+        - key: analytics
+          required: false
+          consent_mode: [analytics_storage]
+          label_t9n:
+            pl: Analityczne
+            en: Analytics
+          description_t9n:
+            pl: 'Pokazują nam, jak korzystasz ze strony (Google Analytics, Microsoft Clarity), żebyśmy mogli ją ulepszać.'
+            en: 'Show us how the site is used (Google Analytics, Microsoft Clarity) so we can improve it.'
+        - key: marketing
+          required: false
+          consent_mode: [ad_storage, ad_user_data, ad_personalization]
+          label_t9n:
+            pl: Marketingowe
+            en: Marketing
+          description_t9n:
+            pl: 'Mierzą skuteczność reklam i pozwalają je personalizować (Google Ads, Microsoft Advertising). <a href="https://business.safety.google/privacy/">Jak Google wykorzystuje dane</a>'
+            en: 'Measure ad performance and allow ads personalisation (Google Ads, Microsoft Advertising). <a href="https://business.safety.google/privacy/">How Google uses data</a>'
+      buttons_t9n:
+        pl:
+          accept_all: Akceptuj wszystkie
+          reject_all: Odrzuć wszystkie
+          customize: Ustawienia
+          save: Zapisz wybór
+        en:
+          accept_all: Accept all
+          reject_all: Reject all
+          customize: Settings
+          save: Save choices
+      texts_t9n:
+        pl:
+          preferences_title: Ustawienia plików cookie
+          close_label: Zamknij
+        en:
+          preferences_title: Cookie settings
+          close_label: Close
+    content_published_id: null
+    published_at: null
+    is_current: false
+    created_at: "2026-09-24T00:00:00Z"
+    modified_at: "2026-09-24T00:00:00Z"

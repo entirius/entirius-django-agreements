@@ -78,12 +78,18 @@ class VersionViewSet(viewsets.ViewSet):
             data = VersionCreateRequest(**request.data)
         except ValidationError as exc:
             raise_pydantic_as_drf(exc)
+        cookie_banner = data.cookie_banner.model_dump() if data.cookie_banner else None
         try:
             version = version_service.create_version(
-                definition_slug=slug, summary_t9n=data.summary_t9n, content_published_id=data.content_published_id
+                definition_slug=slug,
+                summary_t9n=data.summary_t9n,
+                content_published_id=data.content_published_id,
+                cookie_banner=cookie_banner,
             )
         except ObjectDoesNotExist as exc:
             raise NotFound("Agreement definition not found.") from exc
+        except ValueError as exc:
+            raise ParseError(str(exc)) from exc
         return Response(version_service.to_version_response_dict(version), status=status.HTTP_201_CREATED)
 
 
@@ -131,6 +137,8 @@ class VersionDetailViewSet(viewsets.ViewSet):
             updates["summary_t9n"] = data.summary_t9n
         if data.content_published_id is not None:
             updates["content_published_id"] = data.content_published_id
+        if data.cookie_banner is not None:
+            updates["cookie_banner"] = data.cookie_banner.model_dump()
         try:
             version = version_service.update_draft_version(pk=int(pk), **updates)
         except ObjectDoesNotExist as exc:

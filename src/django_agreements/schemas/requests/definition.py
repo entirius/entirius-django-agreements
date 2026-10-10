@@ -8,7 +8,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-AgreementCategory = Literal["mandatory", "marketing", "informational"]
+AgreementCategory = Literal["mandatory", "marketing", "informational", "cookies"]
 AgreementConsentChannel = Literal["general", "email", "sms", "push", "web"]
 AgreementDisplayContext = Literal["checkout", "registration", "newsletter"]
 
@@ -19,7 +19,7 @@ class DefinitionCreateRequest(BaseModel):
         description="Human-readable display name", examples=["Terms of Service"], min_length=1, max_length=200
     )
     category: AgreementCategory = Field(
-        description="Agreement category: mandatory, marketing, or informational", examples=["mandatory"]
+        description="Agreement category: mandatory, marketing, informational, or cookies", examples=["mandatory"]
     )
     consent_channel: AgreementConsentChannel = Field(
         "general", description="Consent delivery channel: general, email, sms, push, web", examples=["general"]

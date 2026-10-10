@@ -1,7 +1,34 @@
 # Changelog
 
-## Unreleased
+## 2.2.0 — unreleased
 
+- Cookie consent: `CookieConsent`, an append-only anonymous log of cookie banner decisions (`consent_id` UUID,
+  channel, language, banner version, categories, action; no IP, user agent or URL).
+- Cookie banner config on agreement versions: category `cookies`, `AgreementVersion.cookie_banner` (categories with
+  Google Consent Mode signals, button labels and settings dialog texts `preferences_title` / `close_label` per
+  language in `texts_t9n`); publish refuses a banner whose languages differ from
+  `summary_t9n` or miss a channel language, and a second active `cookies` definition for the same channel scope.
+- Public API v2: `GET {channel_idx}/cookie-banner/` (channel-specific banner beats the global one, language
+  fallback) and `POST {channel_idx}/cookie-consents/` (throttle scope `agreements_cookie_consent`, fallback `30/min`;
+  409 `STALE_REVISION` when the banner revision is outdated). Both endpoints answer errors in the v2 envelope
+  (`VALIDATION_ERROR`, `INVALID_REQUEST`, `NOT_FOUND`, `STALE_REVISION`, `RATE_LIMITED`); a 200 banner is sent
+  with `Cache-Control: public, max-age=300`.
+- Admin API v2 (access area `agreements.consents`): `GET cookie-consents/` (filters, pagination), `export/` (CSV), `stats/` (per UTC day, revision,
+  language, action), `{consent_id}/` (history), `POST {consent_id}/erase/` (GDPR erasure: one new random id);
+  read-only Django admin for the log.
+- Management command `purge_cookie_consents` (`--days`, `--dry-run`); refuses a retention shorter than the consent
+  validity.
+- Settings `AGREEMENTS_COOKIE_CONSENT_MAX_AGE_DAYS` (default `365`) and `AGREEMENTS_COOKIE_CONSENT_RETENTION_DAYS`
+  (default `None`).
+- Migration `0004_cookie_consent`.
+- The `cookies` category is kept out of the email-keyed flows: consent submit, status, people, `for-user` and the
+  public definition list.
+- Fixture `cookie_banner` (global PL/EN draft banner, loaded on demand).
+- Tests: migration drift check and OpenAPI schema validation.
+- Marketing subscribers list and CSV: `consent_channel` now carries the agreement's consent channel (it repeated the
+  shop channel).
+- Docs: `cookie-consent.md`; `signals.md` corrected to the code (`consent_changed`, sent only by the confirmation
+  and unsubscribe links); `master-data.md` source values and dependency map corrected; ERD with `CookieConsent`.
 - Access: the module declares its own access areas on its AppConfig and its admin views (copied from the
   entirius-django-access defaults; behaviour unchanged).
 - The newsletter subscribe key is verified by django-access when installed: `APIKeyAuthentication` accepts an access

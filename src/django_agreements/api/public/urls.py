@@ -5,6 +5,10 @@
 from django.urls import path
 
 from django_agreements.api.public.views.consent_views import PublicConsentViewSet
+from django_agreements.api.public.views.cookie_consent_views import (
+    PublicCookieBannerViewSet,
+    PublicCookieConsentViewSet,
+)
 from django_agreements.api.public.views.definition_views import PublicDefinitionViewSet
 from django_agreements.api.public.views.order_agreement_views import PublicOrderAgreementViewSet
 
@@ -49,6 +53,17 @@ urlpatterns = [
         "<str:channel_idx>/consents/unsubscribe/",
         PublicConsentViewSet.as_view({"get": "unsubscribe"}),
         name="public-consent-unsubscribe",
+    ),
+    # Cookie banner and anonymous cookie consent log
+    path(
+        "<str:channel_idx>/cookie-banner/",
+        PublicCookieBannerViewSet.as_view({"get": "retrieve"}),
+        name="public-cookie-banner",
+    ),
+    path(
+        "<str:channel_idx>/cookie-consents/",
+        PublicCookieConsentViewSet.as_view({"post": "create"}),
+        name="public-cookie-consent-submit",
     ),
     # Order agreements
     path(

@@ -1,74 +1,65 @@
 ---
 title: Signals
-description: The consent_changed_signal contract — when it fires, providing args, and receiver patterns.
+description: The consent_changed signal contract — when it fires, its kwargs, and a receiver example.
 ---
 
-## consent_changed_signal
+## consent_changed
 
-**Location:** `src/django_agreements/signals/consent_signals.py`
+**Location:** `src/django_agreements/signals/signals.py`
 
 **Import:**
 
 ```python
-from django_agreements.signals import consent_changed_signal
+from django_agreements.signals import consent_changed
 ```
 
 ### When Emitted
 
-Sent by `consent_service.record_consent()` immediately after a `ConsentRecord` row is
-committed to the database. Fired on every consent change — both grant (`granted=True`)
-and withdrawal (`granted=False`).
+Sent only by the token flows of `consent_service`, after the new `ConsentRecord` row is written:
 
-### Providing Args
+| Sender function | When | `granted` | `source` |
+|---|---|---|---|
+| `confirm_consent(token)` | double opt-in confirmation link (`POST consents/confirm/`) | `True` | `"double-optin-confirmed"` |
+| `revoke_consent(token)` | unsubscribe link (`GET consents/unsubscribe/`) | `False` | `"unsubscribed"` |
 
-| Arg | Type | Description |
+Not sent by `record_consent()`, `record_multiple_consents()`, `request_consent()` or the public consent submit /
+withdraw endpoints — a receiver never sees checkout, registration, consent-page or pending double opt-in records.
+Cookie banner decisions (`CookieConsent`) emit no signal.
+
+### Kwargs
+
+| Kwarg | Type | Description |
 |-----|------|-------------|
 | `sender` | `type` | `ConsentRecord` model class |
-| `email` | `str` | Email address of the user |
-| `slug` | `str` | Agreement slug (e.g., `"marketing-email"`) |
-| `granted` | `bool` | `True` = consent given, `False` = withdrawn |
-| `channel_idx` | `str` | Channel identifier where consent was recorded |
-| `source` | `str` | Source of the consent (see `ConsentRecord.source` choices) |
+| `email` | `str` | Email address from the signed token |
+| `consent_type` | `str` | Agreement definition slug (e.g. `"marketing-email"`) |
+| `granted` | `bool` | `True` = confirmed, `False` = unsubscribed |
+| `source` | `str` | `"double-optin-confirmed"` or `"unsubscribed"` |
+
+No channel is passed — the token carries none.
 
 ### Known Receivers
 
-| Module | `dispatch_uid` | What it does |
-|--------|---------------|--------------|
-| `django_email` | `django_email.on_consent_changed` | Triggers double opt-in email when `slug="marketing-email"` and `granted=True` |
+None in the platform modules. The signal is an extension point for services.
 
 ### Usage Example
 
 ```python
-from django_agreements.signals import consent_changed_signal
+from django_agreements.signals import consent_changed
 
-def on_consent_changed(
-    sender,
-    email: str,
-    slug: str,
-    granted: bool,
-    channel_idx: str,
-    source: str,
-    **kwargs,
-) -> None:
-    if slug != "marketing-email":
+
+def on_consent_changed(sender, email: str, consent_type: str, granted: bool, source: str, **kwargs) -> None:
+    if consent_type != "marketing-email":
         return
-    if granted:
-        newsletter_service.send_confirmation_email(email=email, channel_idx=channel_idx)
-    else:
-        newsletter_service.cancel_subscription(email=email)
+    ...
 
 
 # In AppConfig.ready():
-consent_changed_signal.connect(
-    on_consent_changed,
-    dispatch_uid="django_email.on_consent_changed",
-)
+consent_changed.connect(on_consent_changed, dispatch_uid="my_service.on_consent_changed")
 ```
 
 ### Notes
 
-- Signal fires **after** the database write — safe to read the new consent state.
-- `source="pending-confirmation"` records are created before double opt-in completes.
-  Receivers that only want confirmed consents should filter out this source.
-- This signal is a **public API contract** — providing_args will not change without
-  versioning (`consent_changed_v2_signal`).
+- Sent synchronously, inside the request that handled the link, after the database write — safe to read the new
+  consent state.
+- Accept `**kwargs` in receivers so a future kwarg does not break them.
