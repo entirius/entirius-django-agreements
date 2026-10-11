@@ -48,6 +48,9 @@ Layer rule: `API → Services → Models → DB`. No ORM in views.
 - Optional integrations are lazy imports with `try/except ImportError` fallbacks:
   `django_pim` (channel sync no-op), `django_contentdb` (legal snapshots return empty),
   `django_email` (newsletter signup email skipped), `django_crm` (consent migration command aborts).
+- The public order-agreement write checks the order only where `django_checkout` is enabled (lazy import, `ImportError`
+  and `RuntimeError` both mean "no check"): order in the URL's channel, e-mail = its billing or shipping e-mail, 404
+  otherwise. The module's own tests run without checkout and patch `order_agreement_service._order_emails`.
 - `ConsentRecord` is append-only — never update or delete rows; state queries take the latest record.
 - `AgreementVersion` is immutable once published; only draft versions accept PATCH.
 - `ClauseSet` is immutable once published — a text change is a new version (admin add → `create_version`,

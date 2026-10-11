@@ -13,6 +13,31 @@ from django_agreements.models.consent_record import SOURCE_CHECKOUT
 from django_agreements.services import version_service
 
 
+class OrderNotFound(Exception):
+    """No such order in the channel, or the e-mail is not the order's — one answer for both."""
+
+
+def _order_emails(order_id: uuid.UUID, channel_idx: str) -> list[str | None] | None:
+    """E-mails of the checkout order in the channel ([] = no such order); None when checkout is not enabled."""
+    try:
+        from django_checkout.models import Order
+    except (ImportError, RuntimeError):
+        return None
+    orders = Order.objects.filter(order_id=order_id, channel__idx=channel_idx)
+    return list(orders.values_list("billing_email", "shipping_email").first() or [])
+
+
+def _require_order(order_id: uuid.UUID | str, email: str, channel_idx: str) -> None:
+    try:
+        emails = _order_emails(uuid.UUID(str(order_id)), channel_idx)
+    except ValueError as exc:
+        raise OrderNotFound from exc
+    if emails is None:
+        return
+    if email.strip().lower() not in {known.strip().lower() for known in emails if known}:
+        raise OrderNotFound
+
+
 def record_order_agreements(
     *,
     order_id: uuid.UUID,
@@ -26,8 +51,11 @@ def record_order_agreements(
     """Record agreement acceptance for an order.
 
     Creates both OrderAgreementSnapshot (with body_snapshot) and ConsentRecord
-    for each accepted agreement. Uses bulk_create for performance.
+    for each accepted agreement. Uses bulk_create for performance. With checkout enabled the order must exist in
+    the channel and carry the e-mail (OrderNotFound otherwise). An agreement version already recorded for the order
+    is skipped: no second snapshot, no second consent record.
     """
+    _require_order(order_id, email, channel_idx)
     definitions = {d.slug: d for d in AgreementDefinition.objects.filter(slug__in=slugs)}
     for slug in slugs:
         if slug not in definitions:
@@ -46,10 +74,18 @@ def record_order_agreements(
 
     snapshot_objs = []
     consent_objs = []
+    recorded = set(
+        OrderAgreementSnapshot.objects.filter(order_id=order_id, agreement_version__in=versions.values()).values_list(
+            "agreement_version_id", flat=True
+        )
+    )
 
     for slug in slugs:
         defn = definitions[slug]
         current_version = versions[defn.pk]
+        if current_version.pk in recorded:
+            continue
+        recorded.add(current_version.pk)
 
         # Fetch full text from ContentDB (or empty if not applicable)
         body_text = version_service.fetch_content_text(current_version.content_published_id, language)

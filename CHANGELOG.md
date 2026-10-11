@@ -15,6 +15,18 @@
 - OpenAPI: URL examples use `https://api.example.com` and `https://shop.example.com` instead of `localhost`.
   Metadata only.
 
+### Security
+
+- The public order-agreement write (`POST <channel>/orders/<order_id>/agreements/`) is throttled per address (scope
+  `agreements_order`, 20/min, overridable through `DEFAULT_THROTTLE_RATES`). It had no throttle, so anyone could
+  grow the snapshot and consent tables without limit.
+- The same write is bound to a real order where `django_checkout` is enabled: the order must exist in the channel
+  of the URL and the e-mail must be its billing or shipping e-mail (case-insensitive). Otherwise the answer is 404,
+  the same for an unknown order and for a foreign e-mail. Before, any order id and any address were accepted, which
+  let an anonymous caller forge consent evidence. Without `django_checkout` enabled the write is accepted as before.
+- A second write for the same order skips the agreement versions already recorded: no second snapshot, no second
+  consent record. It used to fail with HTTP 500 on the unique constraint.
+
 ## 2.1.0 — 2026-09-15
 
 - `ClauseSet`: versioned legal clauses (information, opt-out, retention) per channel, legal
