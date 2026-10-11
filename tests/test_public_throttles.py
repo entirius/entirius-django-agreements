@@ -7,12 +7,13 @@
 Throttles run before the handler, so refused bodies count too: a burst of empty requests reaches the limit.
 """
 
+import uuid
 from unittest.mock import patch
 
 import pytest
 from django.urls import reverse
 
-from django_agreements.api.public.throttling import ConsentSubmitThrottle
+from django_agreements.api.public.throttling import ConsentSubmitThrottle, _ScopedAnonThrottle
 
 pytestmark = pytest.mark.django_db
 
@@ -53,3 +54,17 @@ def test_throttle_is_per_address(api_client, channel):
 def test_scope_overrides_and_the_fallback_holds(rates, expected):
     with patch.object(ConsentSubmitThrottle, "THROTTLE_RATES", rates):
         assert ConsentSubmitThrottle().rate == expected
+
+
+def test_order_agreement_and_cookie_consent_throttles_count_separately(api_client, channel):
+    order_url = reverse("public-order-agreements", kwargs={"channel_idx": channel.idx, "order_id": str(uuid.uuid4())})
+    cookie_url = reverse("public-cookie-consent-submit", kwargs={"channel_idx": channel.idx})
+    for _ in range(20):
+        api_client.post(order_url, {}, format="json")
+    assert api_client.post(order_url, {}, format="json").status_code == 429
+    assert api_client.post(cookie_url, {}, format="json").status_code != 429
+
+
+def test_every_public_throttle_has_its_own_scope():
+    scopes = [throttle.scope for throttle in _ScopedAnonThrottle.__subclasses__()]
+    assert len(scopes) == len(set(scopes)) == 5

@@ -113,7 +113,7 @@ class CookieConsentListResponse(BaseModel):
     next: str | None = Field(
         None,
         description="URL of the next page",
-        examples=["http://localhost:8000/api/agreements/v2/admin/cookie-consents/?page=2"],
+        examples=["https://api.example.com/api/agreements/v2/admin/cookie-consents/?page=2"],
     )
     previous: str | None = Field(None, description="URL of the previous page", examples=[None])
     results: list[CookieConsentResponse] = Field(description="Decisions on this page, newest first", examples=[[]])
