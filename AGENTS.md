@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Consent & Agreements module for Volkanos — distribution `entirius-django-agreements`,
+Consent & Agreements module of Entirius — distribution `entirius-django-agreements`,
 Django app `django_agreements`. GDPR-compliant agreement versioning, consent tracking with
 append-only audit trail, and order agreement snapshots.
 
@@ -14,6 +14,8 @@ append-only audit trail, and order agreement snapshots.
 | `make test` | test suite (pytest + pytest-django) |
 | `make test-legacy` | test suite without django_access (legacy key path) |
 
+Tests need PostgreSQL: set `DATABASE_URL` (the default in `tests/settings.py` points at a local postgres).
+
 ## Conventions
 
 - English only: code, docs, commits, branches, PRs.
@@ -26,6 +28,7 @@ append-only audit trail, and order agreement snapshots.
   `access_route_rules`), every admin view carries `access_area`; a new admin route without one fails
   `tests/test_access_ownership.py`.
 - Default: do not commit — git is the user's call.
+- No AI attribution in commits or PR descriptions.
 
 ## Architecture
 
@@ -41,7 +44,18 @@ append-only audit trail, and order agreement snapshots.
 - `schemas/` — pydantic request/response models.
 - `api/` — `admin/` (v2, JWT + IsAdminUser) and `public/` (v2, AllowAny, channel-scoped).
 
+- `management/commands/` — `sync_agreement_channels` (channels from PIM), `migrate_crm_consents`.
+
 Layer rule: `API → Services → Models → DB`. No ORM in views.
+
+| Topic | Where |
+|---|---|
+| Overview, default agreement types, legal clauses, GDPR | `docs/index.md` |
+| Settings with defaults | `docs/configuration.md` |
+| Entities and their roles | `docs/master-data.md` |
+| Legal pages (ContentDB snapshots) | `docs/legal-pages.md` |
+| `consent_changed_signal` | `docs/signals.md` |
+| ERD config for the docs ERD generator | `docs/erd-config.yaml`, `docs/erd.md` |
 
 ## Gotchas
 
@@ -71,5 +85,5 @@ Layer rule: `API → Services → Models → DB`. No ORM in views.
   `tests/test_gdpr.py::test_token_parity_with_django_leads` compares them on tricky inputs when leads is installed.
 - `resolve_clause_set()` falls back only to the channel's default language — never to another basis or channel.
   Footer placeholders are `str.replace` of `{recipient_email}` only; other braces stay verbatim.
-- Seeded clause texts (emporium `fixtures/django_agreements.cfg.yaml`) are `TEST —` placeholders: the lawyer's
-  texts are pasted in the admin as a new version and published before the staging canary.
+- Seeded clause texts (the Emporium test package (`entirius-test-package-emporium`), `fixtures/django_agreements.cfg.yaml`) are `TEST —` placeholders: the lawyer's
+  texts are pasted in the admin as a new version and published.
