@@ -24,6 +24,8 @@
 - Links in sanitised agreement HTML (checkbox labels, the structure-only legal text) keep an `href` only without a
   scheme or with `http`, `https` or `mailto`, read the way a browser reads it. The former check refused the literal
   prefixes `javascript:` and `data:` only, which a leading space or an embedded tab got past.
+- The public order-agreement write refuses a `cookies` definition (HTTP 400, as for an unknown slug): the cookie
+  banner stays out of the email-keyed consent log on this path too.
 
 ## 2.2.0 — 2026-10-10
 

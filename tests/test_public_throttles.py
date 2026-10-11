@@ -59,10 +59,10 @@ def test_scope_overrides_and_the_fallback_holds(rates, expected):
 def test_order_agreement_and_cookie_consent_throttles_count_separately(api_client, channel):
     order_url = reverse("public-order-agreements", kwargs={"channel_idx": channel.idx, "order_id": str(uuid.uuid4())})
     cookie_url = reverse("public-cookie-consent-submit", kwargs={"channel_idx": channel.idx})
-    for _ in range(20):
-        api_client.post(order_url, {}, format="json")
-    assert api_client.post(order_url, {}, format="json").status_code == 429
-    assert api_client.post(cookie_url, {}, format="json").status_code != 429
+    for _ in range(30):
+        api_client.post(cookie_url, {}, format="json")
+    assert api_client.post(cookie_url, {}, format="json").status_code == 429
+    assert api_client.post(order_url, {}, format="json").status_code != 429
 
 
 def test_every_public_throttle_has_its_own_scope():

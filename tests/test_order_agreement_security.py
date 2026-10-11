@@ -135,3 +135,13 @@ def test_second_write_for_the_same_order_creates_no_duplicates(api_client, publi
     assert (first.status_code, second.status_code) == (201, 201)
     assert OrderAgreementSnapshot.objects.count() == 1
     assert ConsentRecord.objects.count() == 1
+
+
+def test_a_cookies_definition_is_not_an_order_agreement(api_client, cookie_definition, make_cookie_version):
+    make_cookie_version(cookie_definition)
+    body = {**BODY, "slugs": [cookie_definition.slug]}
+    with _order_emails([EMAIL]):
+        response = api_client.post(_url(), body, format="json")
+    assert response.status_code == 400
+    assert not OrderAgreementSnapshot.objects.exists()
+    assert not ConsentRecord.objects.exists()

@@ -46,7 +46,8 @@ Tests need PostgreSQL: set `DATABASE_URL` (the default in `tests/settings.py` po
 - `schemas/` — pydantic request/response models.
 - `api/` — `admin/` (v2, JWT + IsAdminUser) and `public/` (v2, AllowAny, channel-scoped).
 
-- `management/commands/` — `sync_agreement_channels` (channels from PIM), `migrate_crm_consents`.
+- `management/commands/` — `sync_agreement_channels` (channels from PIM), `migrate_crm_consents`,
+  `purge_cookie_consents` (retention purge of the cookie decision log).
 
 Layer rule: `API → Services → Models → DB`. No ORM in views.
 
@@ -56,7 +57,7 @@ Layer rule: `API → Services → Models → DB`. No ORM in views.
 | Settings with defaults | `docs/configuration.md` |
 | Entities and their roles | `docs/master-data.md` |
 | Legal pages (ContentDB snapshots) | `docs/legal-pages.md` |
-| `consent_changed_signal` | `docs/signals.md` |
+| `consent_changed` signal | `docs/signals.md` |
 | ERD config for the docs ERD generator | `docs/erd-config.yaml`, `docs/erd.md` |
 
 ## Gotchas
@@ -94,7 +95,7 @@ Layer rule: `API → Services → Models → DB`. No ORM in views.
   Footer placeholders are `str.replace` of `{recipient_email}` only; other braces stay verbatim.
 - Cookie consent (docs: `docs/cookie-consent.md`): the banner is a `category="cookies"` definition — body =
   `summary_t9n`, categories + buttons + dialog texts = `AgreementVersion.cookie_banner`; **revision = version pk**. The cookies
-  category is excluded from every email-keyed flow (`record_consent`, status, people, `for-user`, public definitions).
+  category is excluded from every email-keyed flow (`record_consent`, status, people, `for-user`, public definitions, the order-agreement write).
   `CookieConsent` is append-only; `cookie_consent_service.erase()` and `purge_older_than()` are the only writes to
   existing rows. `publish_version()` refuses a banner whose languages miss a channel language — a global banner must
   cover the languages of every channel. The two public cookie views format their own errors as the v2 envelope

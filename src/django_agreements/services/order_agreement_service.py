@@ -62,7 +62,8 @@ def record_order_agreements(
     is skipped: no second snapshot, no second consent record.
     """
     _require_order(order_id, email, channel_idx)
-    definitions = {d.slug: d for d in AgreementDefinition.objects.filter(slug__in=slugs)}
+    accepted = AgreementDefinition.objects.filter(slug__in=slugs).exclude(category=version_service.COOKIES_CATEGORY)
+    definitions = {d.slug: d for d in accepted}
     for slug in slugs:
         if slug not in definitions:
             raise ValueError(f"Agreement '{slug}' not found.")
