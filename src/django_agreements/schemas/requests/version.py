@@ -12,18 +12,20 @@ from pydantic import BaseModel, Field, field_validator
 
 _SUMMARY_EXAMPLE = {"en": "I accept the Terms of Service", "pl": "Akceptuję regulamin"}
 _LANG_KEY_RE = re.compile(r"^[a-z]{2}$")
-_ALLOWED_TAGS = {"a", "b", "i", "u"}
+_ALLOWED_TAGS = frozenset({"a", "b", "i", "u"})
+_VOID_TAGS = frozenset({"br", "hr"})
 
 
 class _AllowlistSanitizer(HTMLParser):
-    """Strip all tags except _ALLOWED_TAGS. Escapes text content."""
+    """Strip all tags except the allowed ones. Escapes text content."""
 
-    def __init__(self) -> None:
+    def __init__(self, allowed_tags: frozenset[str] = _ALLOWED_TAGS) -> None:
         super().__init__()
+        self._allowed_tags = allowed_tags
         self._parts: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list) -> None:
-        if tag not in _ALLOWED_TAGS:
+        if tag not in self._allowed_tags:
             return
         attr_str = ""
         if tag == "a":
@@ -33,7 +35,7 @@ class _AllowlistSanitizer(HTMLParser):
         self._parts.append(f"<{tag}{attr_str}>")
 
     def handle_endtag(self, tag: str) -> None:
-        if tag in _ALLOWED_TAGS:
+        if tag in self._allowed_tags and tag not in _VOID_TAGS:
             self._parts.append(f"</{tag}>")
 
     def handle_data(self, data: str) -> None:
@@ -43,9 +45,9 @@ class _AllowlistSanitizer(HTMLParser):
         return "".join(self._parts)
 
 
-def sanitize_html(text: str) -> str:
+def sanitize_html(text: str, allowed_tags: frozenset[str] = _ALLOWED_TAGS) -> str:
     """Sanitize HTML using the allowlist parser. Safe to import from service layer."""
-    parser = _AllowlistSanitizer()
+    parser = _AllowlistSanitizer(allowed_tags)
     parser.feed(text)
     return parser.get_output()
 

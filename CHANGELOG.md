@@ -26,6 +26,10 @@
   let an anonymous caller forge consent evidence. Without `django_checkout` enabled the write is accepted as before.
 - A second write for the same order skips the agreement versions already recorded: no second snapshot, no second
   consent record. It used to fail with HTTP 500 on the unique constraint.
+- Legal text taken from stored page content (`text_html` of the content history and of the consent-time lookup) is
+  sanitised before it leaves `extract_legal_html`: with a content module that ships its sanitiser, the same
+  allowlist as on its write path; otherwise structure tags only (headings, paragraphs, lists, tables, links with a
+  safe `href`). It used to return the stored HTML as it was, scripts and event handlers included.
 
 ## 2.1.0 — 2026-09-15
 
