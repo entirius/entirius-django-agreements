@@ -1,6 +1,6 @@
 ---
 title: "Configuration"
-description: "Django settings for the django-agreements module — language fallback, newsletter double opt-in, token expiry, and storefront URL."
+description: "Django settings for the django-agreements module — language fallback, newsletter double opt-in, token expiry, storefront URL, and cookie consent validity, retention and throttling."
 ---
 
 ## Settings
@@ -15,6 +15,17 @@ description: "Django settings for the django-agreements module — language fall
 | `AGREEMENTS_API_KEY` | `str` | `""` | Key the storefront sends as `X-API-KEY` to the public endpoints. With `entirius-django-access` installed it is not compared: the key is an access token with scope `agreements.subscribe` (the setting's value is imported as a legacy token). |
 | `AGREEMENTS_PUBLIC_CONSENT_SOURCES` | `tuple[str, ...]` | `("checkout", "registration", "consent-page", "newsletter-signup")` | Consent sources accepted from the public submission API; internal sources are set by the service only. |
 | `LEADS_ANONYMISED_DOMAIN` | `str` | `"anonymised.invalid"` | Host part of the token that replaces an erased email (`gdpr_erase`). Must equal the value used by leads and communicator. |
+| `AGREEMENTS_COOKIE_CONSENT_MAX_AGE_DAYS` | `int` | `365` | Cookie consent validity in days. Returned by the public banner endpoint as `max_age_days` — the consent cookie lifetime on every front end, and the minimum `purge_cookie_consents` retention. |
+| `AGREEMENTS_COOKIE_CONSENT_RETENTION_DAYS` | `int \| None` | `None` | Cookie consent proof retention for `purge_cookie_consents`. `None` = the command requires `--days`. Recommended `1461`, see [Cookie Consent](/volkanos/modules/agreements/cookie-consent/#retention). |
+
+## Throttling
+
+The public cookie consent POST is throttled per client IP with the DRF scope `agreements_cookie_consent`. Without a
+valid rate for the scope the endpoint falls back to `30/min`. Override in the service settings:
+
+```python
+REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]["agreements_cookie_consent"] = "60/min"
+```
 
 ## Example Override
 

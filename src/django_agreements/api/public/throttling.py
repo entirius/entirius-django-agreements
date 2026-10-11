@@ -48,3 +48,8 @@ class TokenActionThrottle(_ScopedAnonThrottle):
 class OrderAgreementThrottle(_ScopedAnonThrottle):
     scope = "agreements_order"
     fallback_rate = "20/min"
+
+
+class CookieConsentThrottle(_ScopedAnonThrottle):
+    scope = "agreements_cookie_consent"
+    fallback_rate = "30/min"

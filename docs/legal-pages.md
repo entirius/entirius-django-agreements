@@ -10,6 +10,8 @@ sidebar:
 Legal pages = ContentDB pages linked to AgreementDefinitions via `content_route`.
 Mandatory agreements (terms of service, privacy policy) store their full text in ContentDB.
 Marketing agreements store their text inline in `summary_t9n` — no legal page needed.
+Cookie banners (`category="cookies"`) keep the banner body inline in `summary_t9n` as well and link to the
+cookie policy from it; the log of banner decisions has no consent-text lookup — the version (`revision`) is the proof.
 
 Each publish in ContentDB creates a new immutable Published record. Old snapshots are preserved,
 making it possible to look up what legal text was active at any point in time.

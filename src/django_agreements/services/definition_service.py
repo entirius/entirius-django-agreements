@@ -8,6 +8,7 @@ from django.db.models import Prefetch, Q, QuerySet
 
 from django_agreements.models import AgreementDefinition, AgreementVersion
 from django_agreements.services import channel_service
+from django_agreements.services.version_service import COOKIES_CATEGORY
 
 _CURRENT_VERSION_PREFETCH = Prefetch(
     "versions", queryset=AgreementVersion.objects.filter(is_current=True), to_attr="current_version_list"
@@ -21,9 +22,13 @@ def list_definitions(
     consent_channel: str | None = None,
     channel_idx: str | None = None,
     search: str | None = None,
+    include_cookies: bool = True,
 ) -> QuerySet[AgreementDefinition]:
-    """List definitions with optional filters."""
+    """List definitions with optional filters. include_cookies=False hides cookie banners (email-keyed flows)."""
     qs = AgreementDefinition.objects.prefetch_related("channels", _CURRENT_VERSION_PREFETCH).all()
+
+    if not include_cookies:
+        qs = qs.exclude(category=COOKIES_CATEGORY)
 
     if not include_inactive:
         qs = qs.filter(is_active=True)

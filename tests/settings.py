@@ -51,6 +51,9 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
+# Pydantic `examples` render as OpenAPI 3.1 keywords
+SPECTACULAR_SETTINGS = {"OAS_VERSION": "3.1.0"}
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",

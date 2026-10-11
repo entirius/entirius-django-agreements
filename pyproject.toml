@@ -1,6 +1,6 @@
 [project]
 name = "entirius-django-agreements"
-version = "2.1.0"
+version = "2.2.0"
 description = "Consent and agreements module for Entirius: versioned agreement texts, consent audit trail and order snapshots"
 keywords = ["django", "ecommerce", "entirius", "consent", "gdpr", "agreements", "newsletter"]
 classifiers = [

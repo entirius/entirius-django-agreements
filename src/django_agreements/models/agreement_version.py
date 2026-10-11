@@ -21,6 +21,9 @@ class AgreementVersion(BaseModel):
     )
     published_at = models.DateTimeField(null=True, blank=True, help_text="Null = draft, set = live")
     is_current = models.BooleanField(default=False, help_text="One True per definition — enforced by service layer")
+    cookie_banner = models.JSONField(
+        default=dict, blank=True, help_text="Cookie banner config (categories, buttons) — only for category=cookies"
+    )
 
     class Meta:
         ordering = ["-version_number"]

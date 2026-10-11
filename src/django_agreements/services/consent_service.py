@@ -14,6 +14,7 @@ from django_agreements.models.consent_record import (
     SOURCE_UNSUBSCRIBED,
 )
 from django_agreements.services import token_service
+from django_agreements.services.version_service import COOKIES_CATEGORY
 
 # System consent display rules — controls special behavior beyond display_contexts.
 # always_show: True = always render checkbox (e.g., terms must be re-accepted per order).
@@ -37,7 +38,8 @@ def record_consent(
     user_agent: str = "",
 ) -> ConsentRecord:
     """Record a consent grant or withdrawal. Always creates a new row."""
-    definition = AgreementDefinition.objects.get(slug=slug)
+    # A cookie banner is not an email consent — its slug behaves as unknown here.
+    definition = AgreementDefinition.objects.exclude(category=COOKIES_CATEGORY).get(slug=slug)
     current_version = AgreementVersion.objects.filter(definition=definition, is_current=True).first()
     if not current_version:
         raise ValueError(f"No published version for agreement '{slug}'.")
@@ -71,7 +73,10 @@ def record_multiple_consents(
     """
     slugs = [item["slug"] for item in agreements]
 
-    definitions_by_slug = {defn.slug: defn for defn in AgreementDefinition.objects.filter(slug__in=slugs)}
+    definitions_by_slug = {
+        defn.slug: defn
+        for defn in AgreementDefinition.objects.filter(slug__in=slugs).exclude(category=COOKIES_CATEGORY)
+    }
     for slug in slugs:
         if slug not in definitions_by_slug:
             raise ValueError(f"Agreement '{slug}' not found.")
@@ -129,7 +134,11 @@ def get_consent_status(email: str) -> dict[str, bool]:
         .order_by("-created_at")
         .values("granted")[:1]
     )
-    definitions = AgreementDefinition.objects.filter(is_active=True).annotate(latest_granted=latest_granted)
+    definitions = (
+        AgreementDefinition.objects.filter(is_active=True)
+        .exclude(category=COOKIES_CATEGORY)
+        .annotate(latest_granted=latest_granted)
+    )
     return {defn.slug: bool(defn.latest_granted) for defn in definitions}
 
 
@@ -210,8 +219,10 @@ def get_person_detail(email: str) -> dict:
             email=email, source=SOURCE_DOUBLE_OPTIN_PENDING, granted=True, agreement_version__definition=OuterRef("pk")
         )
     )
-    definitions = AgreementDefinition.objects.filter(is_active=True).annotate(
-        latest_granted=latest_granted, has_pending=has_pending
+    definitions = (
+        AgreementDefinition.objects.filter(is_active=True)
+        .exclude(category=COOKIES_CATEGORY)
+        .annotate(latest_granted=latest_granted, has_pending=has_pending)
     )
 
     detailed_status = {}
@@ -254,6 +265,7 @@ def get_definitions_for_user(
 
     qs = (
         AgreementDefinition.objects.filter(is_active=True, display_contexts__contains=[context])
+        .exclude(category=COOKIES_CATEGORY)
         .filter(Q(channels__idx=channel_idx) | Q(channels__isnull=True))
         .distinct()
         .prefetch_related(

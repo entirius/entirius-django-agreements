@@ -151,6 +151,70 @@ def make_clause_set(channel):
     return _make
 
 
+def _cookie_banner(languages=("pl", "en")) -> dict:
+    """A valid cookie banner config with texts in `languages`."""
+
+    def t9n(text):
+        return {lang: f"{text} {lang}" for lang in languages}
+
+    buttons = {"accept_all": "Accept all", "reject_all": "Reject all", "customize": "Settings", "save": "Save"}
+    return {
+        "categories": [
+            {
+                "key": "necessary",
+                "required": True,
+                "consent_mode": [],
+                "label_t9n": t9n("Necessary"),
+                "description_t9n": t9n("Always on"),
+            },
+            {
+                "key": "analytics",
+                "required": False,
+                "consent_mode": ["analytics_storage"],
+                "label_t9n": t9n("Analytics"),
+                "description_t9n": t9n("Site usage"),
+            },
+        ],
+        "buttons_t9n": {lang: dict(buttons) for lang in languages},
+        "texts_t9n": {lang: {"preferences_title": f"Settings {lang}", "close_label": "Close"} for lang in languages},
+    }
+
+
+@pytest.fixture
+def cookie_banner():
+    """Builder of a valid cookie banner config: cookie_banner(languages=("pl", "en"))."""
+    return _cookie_banner
+
+
+@pytest.fixture
+def cookie_definition(db):
+    """A global (no channels) cookies definition."""
+    return AgreementDefinition.objects.create(
+        slug="cookie-banner", name="Cookie banner", category="cookies", consent_channel="web", sort_order=100
+    )
+
+
+@pytest.fixture
+def make_cookie_version(db):
+    """Create a cookies version with a valid banner; published + current unless published=False."""
+
+    def _make(definition, published=True, languages=("pl", "en"), **overrides):
+        from django.utils import timezone
+
+        last = definition.versions.order_by("-version_number").first()
+        fields = {
+            "definition": definition,
+            "version_number": last.version_number + 1 if last else 1,
+            "summary_t9n": {lang: f"We use cookies {lang}" for lang in languages},
+            "cookie_banner": _cookie_banner(languages),
+            "published_at": timezone.now() if published else None,
+            "is_current": published,
+        }
+        return AgreementVersion.objects.create(**{**fields, **overrides})
+
+    return _make
+
+
 @pytest.fixture
 def make_api_key(settings):
     """Configure the key the module accepts today and return its raw value.

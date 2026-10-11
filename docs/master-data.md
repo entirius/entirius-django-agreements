@@ -1,6 +1,6 @@
 ---
 title: Master Data Architecture
-description: How agreement definitions, versions, consent records, and order snapshots fit together in the django-agreements module.
+description: How agreement definitions, versions, consent records, cookie consents, and order snapshots fit together in the django-agreements module.
 ---
 
 django-agreements separates **master data** (agreement definitions and their versions) from
@@ -18,6 +18,7 @@ architecture and the constraints that enforce GDPR compliance.
 | `OrderAgreementSnapshot` | Transaction: text frozen at order acceptance | Never (GDPR erasure pseudonymises the person) |
 | `ClauseSet` | Master: legal clauses per channel × `LegalBasis` × language | Immutable once published |
 | `ObjectionEvent` | Transaction: append-only log of confirmed opt-outs | Never (GDPR erasure pseudonymises the email) |
+| `CookieConsent` | Transaction: append-only anonymous log of cookie banner decisions | Never (erasure re-randomises `consent_id`; the retention purge deletes old rows) |
 
 ## AgreementDefinition
 
@@ -28,7 +29,7 @@ it applies to.
 AgreementDefinition
 ├── slug (unique)       "terms-of-service", "marketing-email"
 ├── name                Display name shown in admin
-├── category            "mandatory" | "marketing" | "informational"
+├── category            "mandatory" | "marketing" | "informational" | "cookies"
 ├── consent_channel     "general" | "email" | "sms" | "push" | "web"
 ├── channels (M2M)      empty = global, set = restricted to those channels
 ├── content_route       ContentDB route for full legal text (nullable for marketing)
@@ -55,7 +56,8 @@ AgreementVersion
 ├── summary_t9n (JSON)      {"en": "I accept the terms", "pl": "Akceptuję regulamin"}
 ├── content_published_id    Soft ref to ContentDB Published (nullable for marketing)
 ├── published_at            null = draft, timestamp = live
-└── is_current              Only one version per definition can be True
+├── is_current              Only one version per definition can be True
+└── cookie_banner (JSON)    Categories + buttons — only for category "cookies", else {}
 ```
 
 :::caution
@@ -98,8 +100,8 @@ ConsentRecord
 ├── granted                 True = given, False = withdrawn
 ├── source                  "checkout" | "registration" | "consent-page" |
 │                           "newsletter-signup" | "api" | "import" |
-│                           "crm-v1" | "pending-confirmation" | "email-confirmation" |
-│                           "email-unsubscribe"
+│                           "crm-v1" | "double-optin-pending" |
+│                           "double-optin-confirmed" | "unsubscribed"
 ├── ip_address
 ├── user_agent
 └── channel_idx             Channel where consent was given
@@ -114,10 +116,13 @@ ConsentRecord or `.delete()` on one is a bug.
 **Reading consent status:** use `consent_service.is_consented(email, slug)` — it reads the
 latest record by `created_at` per `(email, agreement_version__definition__slug)`.
 
-**Double opt-in:** When `source="pending-confirmation"`, the consent is not yet effective.
+**Double opt-in:** When `source="double-optin-pending"`, the consent is not yet effective.
 The marketing email sends a confirmation link. On click, a second record is created with
-`source="email-confirmation"`. `is_consented()` checks that the latest record is NOT
-`pending-confirmation`.
+`source="double-optin-confirmed"`. `is_consented()` ignores `double-optin-pending` records.
+
+**Cookie banners are not email consents:** definitions with `category="cookies"` are excluded from every
+email-keyed flow — consent submit, status, people, marketing subscribers and the public definition lists.
+Their decisions live in `CookieConsent`.
 
 ## OrderAgreementSnapshot
 
@@ -164,6 +169,22 @@ ObjectionEvent
 `ObjectionEvent` is independent of `ConsentRecord`: an objection to processing on legitimate interest is not
 a consent withdrawal. Publishing rules and GDPR hooks: [Overview](/volkanos/modules/agreements/).
 
+## CookieConsent
+
+```
+CookieConsent
+├── consent_id (UUID)           Random id from the visitor's consent cookie — no email, IP or user agent
+├── channel_idx                 Channel the banner was shown on
+├── language                    ISO2 of the banner text
+├── agreement_version (FK)      The cookies version decided on (PROTECT) — its pk is the "revision"
+├── categories (JSON)           {"necessary": true, "analytics": false, ...}
+├── action                      accept_all | reject_all | custom | withdraw
+└── created_at
+```
+
+Append-only; the only writes to existing rows are the GDPR erasure (every row of a `consent_id` gets one new random
+id) and the retention purge. Details: [Cookie Consent](/volkanos/modules/agreements/cookie-consent/).
+
 ## ContentDB Integration
 
 Mandatory agreements (terms-of-service, privacy-policy) link their full text to ContentDB
@@ -183,20 +204,19 @@ except ImportError:
     text = ""
 ```
 
-## consent_changed_signal
+## consent_changed
 
-`consent_service.record_consent()` emits `consent_changed_signal` after every write.
-Other modules (e.g., django-email) subscribe to this signal to react to consent changes
-without creating a direct import dependency on django-agreements.
+`consent_service.confirm_consent()` and `revoke_consent()` — the double opt-in confirmation and unsubscribe
+links — send `consent_changed` after writing the new record. Other writes (`record_consent()` and the public
+submit / withdraw endpoints) and cookie decisions send nothing.
 
 ```python
-from django_agreements.signals import consent_changed_signal
+from django_agreements.signals import consent_changed
 
-# Providing args:
-# email (str), slug (str), granted (bool), channel_idx (str), source (str)
+# kwargs: email (str), consent_type (str), granted (bool), source (str)
 ```
 
-See [Signals](./signals/) for implementation patterns.
+See [Signals](/volkanos/modules/agreements/signals/) for the contract.
 
 ## Dependency Map
 
@@ -205,8 +225,8 @@ django-agreements
 ├── depends on:   django_regional.Language (hard)
 ├── soft depends: django_contentdb.Published (ImportError-safe)
 ├── soft depends: django_pim.Channel (sync only, ImportError-safe)
-└── depended on:  django-email (via consent_changed_signal)
-                  django-leads (LegalBasis, clause sets, discovers gdpr.py)
+├── soft depends: django_email (newsletter confirmation email, ImportError-safe)
+└── depended on:  django-leads (LegalBasis, clause sets, discovers gdpr.py)
                   django-checkout (via OrderAgreementSnapshot UUID ref)
 ```
 

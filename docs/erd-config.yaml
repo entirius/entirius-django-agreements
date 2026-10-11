@@ -8,6 +8,7 @@ groups:
       - AgreementVersion
       - ConsentRecord
       - OrderAgreementSnapshot
+      - CookieConsent
   - name: agreements-clauses
     title: "Legal Clauses & Objections"
     models:
