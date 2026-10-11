@@ -14,6 +14,16 @@ _SUMMARY_EXAMPLE = {"en": "I accept the Terms of Service", "pl": "Akceptuję reg
 _LANG_KEY_RE = re.compile(r"^[a-z]{2}$")
 _ALLOWED_TAGS = frozenset({"a", "b", "i", "u"})
 _VOID_TAGS = frozenset({"br", "hr"})
+_HREF_SCHEMES = frozenset({"http", "https", "mailto"})
+_SCHEME_RE = re.compile(r"^([a-z][a-z0-9+.-]*):")
+# Browsers drop control characters and whitespace before they read the scheme ("java\tscript:").
+_URL_NOISE_RE = re.compile(r"[\x00-\x20\x7f-\x9f]")
+
+
+def _safe_href(value: str) -> bool:
+    """A link without a scheme (a path, an anchor) or with an allowed one."""
+    scheme = _SCHEME_RE.match(_URL_NOISE_RE.sub("", value).lower())
+    return scheme is None or scheme.group(1) in _HREF_SCHEMES
 
 
 class _AllowlistSanitizer(HTMLParser):
@@ -30,7 +40,7 @@ class _AllowlistSanitizer(HTMLParser):
         attr_str = ""
         if tag == "a":
             for name, value in attrs:
-                if name == "href" and value and not value.lower().startswith(("javascript:", "data:")):
+                if name == "href" and value and _safe_href(value):
                     attr_str = f' href="{html.escape(value)}"'
         self._parts.append(f"<{tag}{attr_str}>")
 

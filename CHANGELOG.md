@@ -31,6 +31,9 @@
   sanitised before it leaves `extract_legal_html`: with a content module that ships its sanitiser, the same
   allowlist as on its write path; otherwise structure tags only (headings, paragraphs, lists, tables, links with a
   safe `href`). It used to return the stored HTML as it was, scripts and event handlers included.
+- Links in sanitised agreement HTML (checkbox labels, the structure-only legal text) keep an `href` only without a
+  scheme or with `http`, `https` or `mailto`, read the way a browser reads it. The former check refused the literal
+  prefixes `javascript:` and `data:` only, which a leading space or an embedded tab got past.
 
 ## 2.1.0 — 2026-09-15
 
