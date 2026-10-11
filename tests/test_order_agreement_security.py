@@ -77,6 +77,56 @@ def test_checkout_absent_or_not_enabled_means_no_order_check(monkeypatch, models
     assert order_agreement_service._order_emails(uuid.uuid4(), "default-europe") is None
 
 
+class _FakeOrders:
+    """Stands in for ``Order.objects``: records the filter and answers with one row or none."""
+
+    def __init__(self, row):
+        self.row, self.filters = row, None
+
+    def filter(self, **filters):
+        self.filters = filters
+        return self
+
+    def values_list(self, *fields):
+        self.fields = fields
+        return self
+
+    def first(self):
+        return self.row
+
+
+@pytest.mark.parametrize(
+    ("row", "emails"),
+    [
+        (("a@test.com", "b@test.com"), ["a@test.com", "b@test.com"]),
+        ((None, "b@test.com"), [None, "b@test.com"]),
+        (None, []),
+    ],
+    ids=["both", "one-null", "no-row"],
+)
+def test_order_lookup_is_scoped_to_the_order_and_the_channel(monkeypatch, row, emails):
+    orders = _FakeOrders(row)
+    models = types.ModuleType("django_checkout.models")
+    models.Order = types.SimpleNamespace(objects=orders)
+    monkeypatch.setitem(sys.modules, "django_checkout", types.ModuleType("django_checkout"))
+    monkeypatch.setitem(sys.modules, "django_checkout.models", models)
+    order_id = uuid.uuid4()
+
+    assert order_agreement_service._order_emails(order_id, "default-europe") == emails
+    assert orders.filters == {"order_id": order_id, "channel__idx": "default-europe"}
+    assert orders.fields == ("billing_email", "shipping_email")
+
+
+def test_concurrent_duplicate_write_is_absorbed(api_client, published_version):
+    url = _url()
+    with _order_emails(None):
+        api_client.post(url, BODY, format="json")
+        with patch.object(order_agreement_service, "_recorded_version_ids", return_value=set()):
+            assert api_client.post(url, BODY, format="json").status_code == 201
+    assert OrderAgreementSnapshot.objects.count() == 1
+    assert ConsentRecord.objects.count() == 1
+
+
 def test_second_write_for_the_same_order_creates_no_duplicates(api_client, published_version):
     url = _url()
     with _order_emails(None):

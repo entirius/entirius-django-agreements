@@ -6,6 +6,7 @@
 
 import uuid
 
+from django.db import IntegrityError, transaction
 from django.db.models import QuerySet
 
 from django_agreements.models import AgreementDefinition, AgreementVersion, ConsentRecord, OrderAgreementSnapshot
@@ -36,6 +37,11 @@ def _require_order(order_id: uuid.UUID | str, email: str, channel_idx: str) -> N
         return
     if email.strip().lower() not in {known.strip().lower() for known in emails if known}:
         raise OrderNotFound
+
+
+def _recorded_version_ids(order_id: uuid.UUID | str, versions: list[AgreementVersion]) -> set[int]:
+    snapshots = OrderAgreementSnapshot.objects.filter(order_id=order_id, agreement_version__in=versions)
+    return set(snapshots.values_list("agreement_version_id", flat=True))
 
 
 def record_order_agreements(
@@ -74,11 +80,7 @@ def record_order_agreements(
 
     snapshot_objs = []
     consent_objs = []
-    recorded = set(
-        OrderAgreementSnapshot.objects.filter(order_id=order_id, agreement_version__in=versions.values()).values_list(
-            "agreement_version_id", flat=True
-        )
-    )
+    recorded = _recorded_version_ids(order_id, list(versions.values()))
 
     for slug in slugs:
         defn = definitions[slug]
@@ -117,8 +119,12 @@ def record_order_agreements(
             )
         )
 
-    OrderAgreementSnapshot.objects.bulk_create(snapshot_objs)
-    ConsentRecord.objects.bulk_create(consent_objs)
+    try:
+        with transaction.atomic():
+            OrderAgreementSnapshot.objects.bulk_create(snapshot_objs)
+            ConsentRecord.objects.bulk_create(consent_objs)
+    except IntegrityError:  # a concurrent write for the same order recorded them first
+        pass
 
     return list(
         OrderAgreementSnapshot.objects.filter(

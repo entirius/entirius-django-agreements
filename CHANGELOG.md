@@ -25,7 +25,8 @@
   the same for an unknown order and for a foreign e-mail. Before, any order id and any address were accepted, which
   let an anonymous caller forge consent evidence. Without `django_checkout` enabled the write is accepted as before.
 - A second write for the same order skips the agreement versions already recorded: no second snapshot, no second
-  consent record. It used to fail with HTTP 500 on the unique constraint.
+  consent record. It used to fail with HTTP 500 on the unique constraint. The snapshots and the consent records of
+  one write are stored in one transaction.
 - Legal text taken from stored page content (`text_html` of the content history and of the consent-time lookup) is
   sanitised before it leaves `extract_legal_html`: with a content module that ships its sanitiser, the same
   allowlist as on its write path; otherwise structure tags only (headings, paragraphs, lists, tables, links with a
