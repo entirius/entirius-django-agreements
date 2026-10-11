@@ -65,6 +65,11 @@ Layer rule: `API → Services → Models → DB`. No ORM in views.
 - The public order-agreement write checks the order only where `django_checkout` is enabled (lazy import, `ImportError`
   and `RuntimeError` both mean "no check"): order in the URL's channel, e-mail = its billing or shipping e-mail, 404
   otherwise. The module's own tests run without checkout and patch `order_agreement_service._order_emails`.
+- The same write is throttled per address (`api/public/throttling.py`, scope `agreements_order`, overridable through
+  `DEFAULT_THROTTLE_RATES`) and repeatable per order: versions already recorded are skipped, and the snapshots and
+  consent records of one write are stored in one transaction.
+- Legal text read from stored page content (`content_history_service.extract_legal_html`) is sanitised before it
+  leaves the service: the content module's allowlist where it ships one, structure tags only otherwise.
 - `ConsentRecord` is append-only — never update or delete rows; state queries take the latest record.
 - `AgreementVersion` is immutable once published; only draft versions accept PATCH.
 - `ClauseSet` is immutable once published — a text change is a new version (admin add → `create_version`,

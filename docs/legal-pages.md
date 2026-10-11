@@ -117,7 +117,7 @@ Located in `django_agreements/services/content_history_service.py`:
 
 | Function | Purpose |
 |----------|---------|
-| `extract_legal_html(content_json)` | Extract legal text HTML from ContentDB JSON |
+| `extract_legal_html(content_json)` | Extract legal text HTML from ContentDB JSON, sanitised |
 | `validate_legal_page_structure(content_json)` | Check structure compliance, return warnings |
 | `list_legal_snapshots(content_route, language)` | List all Published snapshots for a route |
 | `get_legal_text_at_time(content_route, at_time, language)` | Find snapshot active at a timestamp |
