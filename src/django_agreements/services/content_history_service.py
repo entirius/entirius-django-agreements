@@ -7,6 +7,11 @@
 from datetime import datetime
 from html.parser import HTMLParser
 
+_STRUCTURE_TAGS = frozenset(
+    "h1 h2 h3 h4 h5 h6 p br hr div span blockquote ul ol li a strong b em i u s sub sup "
+    "table thead tbody tfoot tr th td".split()
+)
+
 
 class _TextStripper(HTMLParser):
     def __init__(self) -> None:
@@ -26,21 +31,32 @@ def _strip_html(html: str) -> str:
     return stripper.get_text()
 
 
+def _sanitize_legal_html(text: str) -> str:
+    """Stored page HTML made safe to render: the content module's allowlist, or structure tags only without it."""
+    try:
+        from django_contentdb.services.content_service import sanitize_html
+    except ImportError:  # no content module, or one that predates its sanitiser
+        from django_agreements.schemas.requests.version import sanitize_html as sanitize_structure
+
+        return sanitize_structure(text, _STRUCTURE_TAGS)
+    return sanitize_html(text)
+
+
 def extract_legal_html(content_json: dict) -> str:
-    """Return HTML from the first tile-txt-btn tile, or concatenate all descriptions."""
+    """Return sanitised HTML from the first tile-txt-btn tile, or concatenate all descriptions."""
     tiles: dict = content_json.get("tiles", {})
     if not tiles:
         return ""
 
     for tile in tiles.values():
         if isinstance(tile, dict) and tile.get("core_type") == "tile-txt-btn":
-            return tile.get("description", "")
+            return _sanitize_legal_html(tile.get("description") or "")
 
     # Fallback: concatenate all tile descriptions
     parts = [
         tile.get("description", "") for tile in tiles.values() if isinstance(tile, dict) and tile.get("description")
     ]
-    return "\n".join(parts)
+    return _sanitize_legal_html("\n".join(parts))
 
 
 def validate_legal_page_structure(content_json: dict) -> list[str]:

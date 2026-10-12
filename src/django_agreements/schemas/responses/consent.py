@@ -29,7 +29,7 @@ class ConsentRecordListResponse(BaseModel):
     next: str | None = Field(
         None,
         description="URL of next page",
-        examples=["http://localhost:8000/api/agreements/v2/admin/consents/?page=2"],
+        examples=["https://api.example.com/api/agreements/v2/admin/consents/?page=2"],
     )
     previous: str | None = Field(None, description="URL of previous page", examples=[None])
     results: list[ConsentRecordResponse] = Field(description="List of consent records", examples=[[]])
@@ -48,7 +48,7 @@ class ConsentStatusResponse(BaseModel):
 class UnsubscribeUrlResponse(BaseModel):
     url: str = Field(
         description="Signed unsubscribe URL",
-        examples=["http://localhost:3000/newsletter/confirm?token=eyJ...&action=unsubscribe"],
+        examples=["https://shop.example.com/newsletter/confirm?token=eyJ...&action=unsubscribe"],
     )
 
 
@@ -63,7 +63,9 @@ class ConsentPersonResponse(BaseModel):
 class ConsentPersonListResponse(BaseModel):
     count: int = Field(description="Total unique emails", examples=[100])
     next: str | None = Field(
-        None, description="URL of next page", examples=["http://localhost:8000/api/agreements/v2/admin/people/?page=2"]
+        None,
+        description="URL of next page",
+        examples=["https://api.example.com/api/agreements/v2/admin/people/?page=2"],
     )
     previous: str | None = Field(None, description="URL of previous page", examples=[None])
     results: list[ConsentPersonResponse] = Field(description="List of people", examples=[[]])

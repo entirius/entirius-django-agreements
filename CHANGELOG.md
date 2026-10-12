@@ -1,5 +1,32 @@
 # Changelog
 
+## 3.0.0 — 2026-10-12
+
+- OpenAPI: URL examples use `https://api.example.com` and `https://shop.example.com` instead of `localhost`.
+  Metadata only.
+
+### Security
+
+- The public order-agreement write (`POST <channel>/orders/<order_id>/agreements/`) is throttled per address (scope
+  `agreements_order`, 20/min, overridable through `DEFAULT_THROTTLE_RATES`). It had no throttle, so anyone could
+  grow the snapshot and consent tables without limit.
+- The same write is bound to a real order where `django_checkout` is enabled: the order must exist in the channel
+  of the URL and the e-mail must be its billing or shipping e-mail (case-insensitive). Otherwise the answer is 404,
+  the same for an unknown order and for a foreign e-mail. Before, any order id and any address were accepted, which
+  let an anonymous caller forge consent evidence. Without `django_checkout` enabled the write is accepted as before.
+- A second write for the same order skips the agreement versions already recorded: no second snapshot, no second
+  consent record. It used to fail with HTTP 500 on the unique constraint. The snapshots and the consent records of
+  one write are stored in one transaction.
+- Legal text taken from stored page content (`text_html` of the content history and of the consent-time lookup) is
+  sanitised before it leaves `extract_legal_html`: with a content module that ships its sanitiser, the same
+  allowlist as on its write path; otherwise structure tags only (headings, paragraphs, lists, tables, links with a
+  safe `href`). It used to return the stored HTML as it was, scripts and event handlers included.
+- Links in sanitised agreement HTML (checkbox labels, the structure-only legal text) keep an `href` only without a
+  scheme or with `http`, `https` or `mailto`, read the way a browser reads it. The former check refused the literal
+  prefixes `javascript:` and `data:` only, which a leading space or an embedded tab got past.
+- The public order-agreement write refuses a `cookies` definition (HTTP 400, as for an unknown slug): the cookie
+  banner stays out of the email-keyed consent log on this path too.
+
 ## 2.2.0 — 2026-10-10
 
 - Cookie consent: `CookieConsent`, an append-only anonymous log of cookie banner decisions (`consent_id` UUID,

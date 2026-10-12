@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Consent & Agreements module for Volkanos — distribution `entirius-django-agreements`,
+Consent & Agreements module of Entirius — distribution `entirius-django-agreements`,
 Django app `django_agreements`. GDPR-compliant agreement versioning, consent tracking with
 append-only audit trail, and order agreement snapshots.
 
@@ -14,6 +14,8 @@ append-only audit trail, and order agreement snapshots.
 | `make test` | test suite (pytest + pytest-django) |
 | `make test-legacy` | test suite without django_access (legacy key path) |
 
+Tests need PostgreSQL: set `DATABASE_URL` (the default in `tests/settings.py` points at a local postgres).
+
 ## Conventions
 
 - English only: code, docs, commits, branches, PRs.
@@ -26,6 +28,7 @@ append-only audit trail, and order agreement snapshots.
   `access_route_rules`), every admin view carries `access_area`; a new admin route without one fails
   `tests/test_access_ownership.py`.
 - Default: do not commit — git is the user's call.
+- No AI attribution in commits or PR descriptions.
 
 ## Architecture
 
@@ -43,13 +46,33 @@ append-only audit trail, and order agreement snapshots.
 - `schemas/` — pydantic request/response models.
 - `api/` — `admin/` (v2, JWT + IsAdminUser) and `public/` (v2, AllowAny, channel-scoped).
 
+- `management/commands/` — `sync_agreement_channels` (channels from PIM), `migrate_crm_consents`,
+  `purge_cookie_consents` (retention purge of the cookie decision log).
+
 Layer rule: `API → Services → Models → DB`. No ORM in views.
+
+| Topic | Where |
+|---|---|
+| Overview, default agreement types, legal clauses, GDPR | `docs/index.md` |
+| Settings with defaults | `docs/configuration.md` |
+| Entities and their roles | `docs/master-data.md` |
+| Legal pages (ContentDB snapshots) | `docs/legal-pages.md` |
+| `consent_changed` signal | `docs/signals.md` |
+| ERD config for the docs ERD generator | `docs/erd-config.yaml`, `docs/erd.md` |
 
 ## Gotchas
 
 - Optional integrations are lazy imports with `try/except ImportError` fallbacks:
   `django_pim` (channel sync no-op), `django_contentdb` (legal snapshots return empty),
   `django_email` (newsletter signup email skipped), `django_crm` (consent migration command aborts).
+- The public order-agreement write checks the order only where `django_checkout` is enabled (lazy import, `ImportError`
+  and `RuntimeError` both mean "no check"): order in the URL's channel, e-mail = its billing or shipping e-mail, 404
+  otherwise. The module's own tests run without checkout and patch `order_agreement_service._order_emails`.
+- The same write is throttled per address (`api/public/throttling.py`, scope `agreements_order`, overridable through
+  `DEFAULT_THROTTLE_RATES`) and repeatable per order: versions already recorded are skipped, and the snapshots and
+  consent records of one write are stored in one transaction.
+- Legal text read from stored page content (`content_history_service.extract_legal_html`) is sanitised before it
+  leaves the service: the content module's allowlist where it ships one, structure tags only otherwise.
 - `ConsentRecord` is append-only — never update or delete rows; state queries take the latest record.
 - `AgreementVersion` is immutable once published; only draft versions accept PATCH.
 - `ClauseSet` is immutable once published — a text change is a new version (admin add → `create_version`,
@@ -72,12 +95,12 @@ Layer rule: `API → Services → Models → DB`. No ORM in views.
   Footer placeholders are `str.replace` of `{recipient_email}` only; other braces stay verbatim.
 - Cookie consent (docs: `docs/cookie-consent.md`): the banner is a `category="cookies"` definition — body =
   `summary_t9n`, categories + buttons + dialog texts = `AgreementVersion.cookie_banner`; **revision = version pk**. The cookies
-  category is excluded from every email-keyed flow (`record_consent`, status, people, `for-user`, public definitions).
+  category is excluded from every email-keyed flow (`record_consent`, status, people, `for-user`, public definitions, the order-agreement write).
   `CookieConsent` is append-only; `cookie_consent_service.erase()` and `purge_older_than()` are the only writes to
   existing rows. `publish_version()` refuses a banner whose languages miss a channel language — a global banner must
   cover the languages of every channel. The two public cookie views format their own errors as the v2 envelope
   (module-local exception handler, no service-level handler assumed); the admin cookie view declares
   `access_area = "agreements.consents"`.
 - `fixtures/cookie_banner.yaml` is loaded once per stack: a re-load resets the definition and version 100 to draft.
-- Seeded clause texts (emporium `fixtures/django_agreements.cfg.yaml`) are `TEST —` placeholders: the lawyer's
-  texts are pasted in the admin as a new version and published before the staging canary.
+- Seeded clause texts (the Emporium test package (`entirius-test-package-emporium`), `fixtures/django_agreements.cfg.yaml`) are `TEST —` placeholders: the lawyer's
+  texts are pasted in the admin as a new version and published.

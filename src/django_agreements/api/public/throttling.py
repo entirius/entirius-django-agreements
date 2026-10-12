@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-"""Per-address throttles of the public consent endpoints — they create state and send mail.
+"""Per-address throttles of the public consent and order-agreement endpoints — they create state and send mail.
 
 ``DEFAULT_THROTTLE_RATES[<scope>]`` overrides a rate; the class ``fallback_rate`` is the safety net when the scope
 is unset or malformed. The fallback must not live in a class ``rate``: DRF's ``SimpleRateThrottle.__init__`` skips
@@ -43,6 +43,11 @@ class ConsentSubmitThrottle(_ScopedAnonThrottle):
 class TokenActionThrottle(_ScopedAnonThrottle):
     scope = "agreements_token"
     fallback_rate = "10/min"
+
+
+class OrderAgreementThrottle(_ScopedAnonThrottle):
+    scope = "agreements_order"
+    fallback_rate = "20/min"
 
 
 class CookieConsentThrottle(_ScopedAnonThrottle):

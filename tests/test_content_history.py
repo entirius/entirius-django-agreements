@@ -4,6 +4,7 @@
 
 """Tests for content history service and admin API endpoints."""
 
+import sys
 from datetime import UTC, datetime
 
 import pytest
@@ -370,3 +371,45 @@ class TestConsentText:
         response = admin_client.get(url)
         # No ContentDB snapshot → 404
         assert response.status_code == 404
+
+
+# ---------------------------------------------------------------------------
+# Service: extract_legal_html — stored HTML is sanitised on the way out
+# ---------------------------------------------------------------------------
+
+DIRTY_LEGAL = (
+    '<h2 onclick="alert(1)">Terms</h2><p>Text <a href="javascript:alert(1)">x</a> '
+    '<a href="https://example.com/t">link</a><br/></p><script>alert(1)</script><img src=x onerror="alert(1)">'
+)
+
+
+def _legal_json(*descriptions, core_type="tile-txt-btn"):
+    return {"tiles": {f"uuid-{i}": {"core_type": core_type, "description": d} for i, d in enumerate(descriptions)}}
+
+
+@pytest.mark.parametrize("content_json", [_legal_json(DIRTY_LEGAL), _legal_json(DIRTY_LEGAL, "x", core_type="other")])
+def test_extract_legal_html_drops_scripts_handlers_and_script_links(content_json):
+    result = extract_legal_html(content_json)
+    for needle in ("<script", "alert(1)</script>", "onclick", "onerror", "javascript:"):
+        assert needle not in result
+    assert "<h2>Terms</h2>" in result
+    assert '<a href="https://example.com/t">link</a>' in result
+
+
+def test_extract_legal_html_without_the_contentdb_sanitiser_keeps_structure_only(monkeypatch):
+    monkeypatch.setitem(sys.modules, "django_contentdb.services.content_service", None)
+    result = extract_legal_html(_legal_json(DIRTY_LEGAL + '<p style="color: red">styled</p>'))
+    assert result == (
+        '<h2>Terms</h2><p>Text <a>x</a> <a href="https://example.com/t">link</a><br></p>alert(1)<p>styled</p>'
+    )
+
+
+@pytest.mark.parametrize(
+    "href",
+    [" javascript:alert(1)", "java&#9;script:alert(1)", "JaVaScRiPt:alert(1)", "data:text/html,x", "vbscript:x"],
+)
+def test_structure_only_sanitiser_drops_script_links_browsers_would_follow(monkeypatch, href):
+    monkeypatch.setitem(sys.modules, "django_contentdb.services.content_service", None)
+    assert extract_legal_html(_legal_json(f'<a href="{href}">x</a><a href="/terms#p1">y</a>')) == (
+        '<a>x</a><a href="/terms#p1">y</a>'
+    )
