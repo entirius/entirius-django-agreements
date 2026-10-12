@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 3.0.0 — 2026-10-12
 
 - OpenAPI: URL examples use `https://api.example.com` and `https://shop.example.com` instead of `localhost`.
   Metadata only.
