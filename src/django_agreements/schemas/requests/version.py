@@ -13,28 +13,40 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 
 _SUMMARY_EXAMPLE = {"en": "I accept the Terms of Service", "pl": "Akceptuję regulamin"}
 _LANG_KEY_RE = re.compile(r"^[a-z]{2}$")
-_ALLOWED_TAGS = {"a", "b", "i", "u"}
+_ALLOWED_TAGS = frozenset({"a", "b", "i", "u"})
+_VOID_TAGS = frozenset({"br", "hr"})
+_HREF_SCHEMES = frozenset({"http", "https", "mailto"})
+_SCHEME_RE = re.compile(r"^([a-z][a-z0-9+.-]*):")
+# Browsers drop control characters and whitespace before they read the scheme ("java\tscript:").
+_URL_NOISE_RE = re.compile(r"[\x00-\x20\x7f-\x9f]")
+
+
+def _safe_href(value: str) -> bool:
+    """A link without a scheme (a path, an anchor) or with an allowed one."""
+    scheme = _SCHEME_RE.match(_URL_NOISE_RE.sub("", value).lower())
+    return scheme is None or scheme.group(1) in _HREF_SCHEMES
 
 
 class _AllowlistSanitizer(HTMLParser):
-    """Strip all tags except _ALLOWED_TAGS. Escapes text content."""
+    """Strip all tags except the allowed ones. Escapes text content."""
 
-    def __init__(self) -> None:
+    def __init__(self, allowed_tags: frozenset[str] = _ALLOWED_TAGS) -> None:
         super().__init__()
+        self._allowed_tags = allowed_tags
         self._parts: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list) -> None:
-        if tag not in _ALLOWED_TAGS:
+        if tag not in self._allowed_tags:
             return
         attr_str = ""
         if tag == "a":
             for name, value in attrs:
-                if name == "href" and value and not value.lower().startswith(("javascript:", "data:")):
+                if name == "href" and value and _safe_href(value):
                     attr_str = f' href="{html.escape(value)}"'
         self._parts.append(f"<{tag}{attr_str}>")
 
     def handle_endtag(self, tag: str) -> None:
-        if tag in _ALLOWED_TAGS:
+        if tag in self._allowed_tags and tag not in _VOID_TAGS:
             self._parts.append(f"</{tag}>")
 
     def handle_data(self, data: str) -> None:
@@ -44,9 +56,9 @@ class _AllowlistSanitizer(HTMLParser):
         return "".join(self._parts)
 
 
-def sanitize_html(text: str) -> str:
+def sanitize_html(text: str, allowed_tags: frozenset[str] = _ALLOWED_TAGS) -> str:
     """Sanitize HTML using the allowlist parser. Safe to import from service layer."""
-    parser = _AllowlistSanitizer()
+    parser = _AllowlistSanitizer(allowed_tags)
     parser.feed(text)
     return parser.get_output()
 

@@ -35,7 +35,7 @@ class DefinitionListResponse(BaseModel):
     next: str | None = Field(
         None,
         description="URL of next page",
-        examples=["http://localhost:8000/api/agreements/v2/admin/definitions/?page=2"],
+        examples=["https://api.example.com/api/agreements/v2/admin/definitions/?page=2"],
     )
     previous: str | None = Field(None, description="URL of previous page", examples=[None])
     results: list[DefinitionResponse] = Field(description="List of definitions", examples=[[]])
@@ -62,7 +62,7 @@ class PublicDefinitionListResponse(BaseModel):
     next: str | None = Field(
         None,
         description="URL of next page",
-        examples=["http://localhost:8000/api/agreements/v2/default-europe/definitions/?page=2"],
+        examples=["https://api.example.com/api/agreements/v2/default-europe/definitions/?page=2"],
     )
     previous: str | None = Field(None, description="URL of previous page", examples=[None])
     results: list[PublicDefinitionResponse] = Field(description="List of definitions", examples=[[]])

@@ -38,7 +38,7 @@ class VersionListResponse(BaseModel):
     next: str | None = Field(
         None,
         description="URL of next page",
-        examples=["http://localhost:8000/api/agreements/v2/admin/versions/?page=2"],
+        examples=["https://api.example.com/api/agreements/v2/admin/versions/?page=2"],
     )
     previous: str | None = Field(None, description="URL of previous page", examples=[None])
     results: list[VersionResponse] = Field(description="List of versions", examples=[[]])
