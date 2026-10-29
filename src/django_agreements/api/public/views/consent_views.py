@@ -8,6 +8,7 @@ import uuid
 
 from django.conf import settings as django_settings
 from django.core.exceptions import ObjectDoesNotExist
+from django_utils.api.client_ip import get_client_ip
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from process_logger import ProcessLogger
 from pydantic import ValidationError
@@ -142,7 +143,7 @@ class PublicConsentViewSet(viewsets.ViewSet):
         # Guest (unauthenticated) flows use the email supplied in the request body.
         email = request.user.email if (request.user and request.user.is_authenticated) else data.email
 
-        ip_address = request.META.get("REMOTE_ADDR")
+        ip_address = get_client_ip(request)
         user_agent = request.META.get("HTTP_USER_AGENT", "")[:2048]
 
         try:
@@ -225,7 +226,7 @@ class PublicConsentViewSet(viewsets.ViewSet):
             raise_pydantic_as_drf(exc)
 
         email = request.user.email
-        ip_address = request.META.get("REMOTE_ADDR")
+        ip_address = get_client_ip(request)
         user_agent = request.META.get("HTTP_USER_AGENT", "")[:2048]
 
         try:

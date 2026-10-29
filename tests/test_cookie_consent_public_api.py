@@ -116,9 +116,9 @@ class TestCookieBanner:
 
 @pytest.mark.django_db
 class TestCookieConsentSubmit:
-    def test_created(self, keyed_client, site_channel, banner):
+    def test_created(self, api_client, site_channel, banner):
         payload = _payload(banner, language="PL")
-        response = keyed_client.post(_consent_url(site_channel.idx), payload, format="json")
+        response = api_client.post(_consent_url(site_channel.idx), payload, format="json")
         assert response.status_code == 201
         data = response.json()
         assert (data["consent_id"], data["revision"], data["language"], data["action"]) == (
@@ -147,47 +147,43 @@ class TestCookieConsentSubmit:
             ({"language": "de"}, "INVALID_REQUEST"),
         ],
     )
-    def test_validation_400(self, keyed_client, site_channel, banner, overrides, error):
-        response = keyed_client.post(_consent_url(site_channel.idx), _payload(banner, **overrides), format="json")
+    def test_validation_400(self, api_client, site_channel, banner, overrides, error):
+        response = api_client.post(_consent_url(site_channel.idx), _payload(banner, **overrides), format="json")
         _assert_envelope(response, 400, error)
         assert not CookieConsent.objects.exists()
 
-    def test_validation_details(self, keyed_client, site_channel, banner):
+    def test_validation_details(self, api_client, site_channel, banner):
         payload = _payload(banner, consent_id="not-a-uuid")
-        response = keyed_client.post(_consent_url(site_channel.idx), payload, format="json")
+        response = api_client.post(_consent_url(site_channel.idx), payload, format="json")
         data = _assert_envelope(response, 400, "VALIDATION_ERROR")
         assert [detail["field"] for detail in data["details"]] == ["consent_id"]
         assert data["details"][0]["location"] == "body"
 
-    def test_malformed_json_400(self, keyed_client, site_channel, banner):
-        response = keyed_client.post(_consent_url(site_channel.idx), "{", content_type="application/json")
+    def test_malformed_json_400(self, api_client, site_channel, banner):
+        response = api_client.post(_consent_url(site_channel.idx), "{", content_type="application/json")
         _assert_envelope(response, 400, "VALIDATION_ERROR")
 
-    def test_unknown_channel_404(self, keyed_client, banner):
-        response = keyed_client.post(_consent_url("nope"), _payload(banner), format="json")
+    def test_unknown_channel_404(self, api_client, banner):
+        response = api_client.post(_consent_url("nope"), _payload(banner), format="json")
         _assert_envelope(response, 404, "NOT_FOUND")
 
-    def test_stale_revision_409(self, keyed_client, site_channel, cookie_definition, banner, make_cookie_version):
+    def test_stale_revision_409(self, api_client, site_channel, cookie_definition, banner, make_cookie_version):
         draft = make_cookie_version(cookie_definition, published=False, languages=("pl", "en", "de"))
         version_service.publish_version(pk=draft.pk)
-        response = keyed_client.post(_consent_url(site_channel.idx), _payload(banner), format="json")
+        response = api_client.post(_consent_url(site_channel.idx), _payload(banner), format="json")
         _assert_envelope(response, 409, "STALE_REVISION")
         assert not CookieConsent.objects.exists()
 
     def test_ignores_jwt(self, user_client, site_channel, banner):
         assert user_client.post(_consent_url(site_channel.idx), _payload(banner), format="json").status_code == 201
 
-    def test_ignores_invalid_jwt(self, keyed_client, site_channel, banner):
-        response = keyed_client.post(
-            _consent_url(site_channel.idx), _payload(banner), format="json", HTTP_AUTHORIZATION="Bearer not-a-token"
-        )
-        assert response.status_code == 201
+    def test_ignores_invalid_jwt(self, api_client, site_channel, banner):
+        api_client.credentials(HTTP_AUTHORIZATION="Bearer not-a-token")
+        assert api_client.post(_consent_url(site_channel.idx), _payload(banner), format="json").status_code == 201
 
-    def test_throttled_429(self, keyed_client, site_channel, banner, monkeypatch):
+    def test_throttled_429(self, api_client, site_channel, banner, monkeypatch):
         monkeypatch.setattr(CookieConsentThrottle, "THROTTLE_RATES", {"agreements_cookie_consent": "2/min"})
-        responses = [
-            keyed_client.post(_consent_url(site_channel.idx), _payload(banner), format="json") for _ in range(3)
-        ]
+        responses = [api_client.post(_consent_url(site_channel.idx), _payload(banner), format="json") for _ in range(3)]
         assert [response.status_code for response in responses] == [201, 201, 429]
         _assert_envelope(responses[2], 429, "RATE_LIMITED")
         assert "Retry-After" in responses[2]

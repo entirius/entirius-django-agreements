@@ -11,17 +11,14 @@ from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_sche
 from process_logger import ProcessLogger
 from pydantic import ValidationError
 from rest_framework import status, viewsets
-from rest_framework.exceptions import APIException, NotAuthenticated, NotFound, ParseError, Throttled
+from rest_framework.exceptions import APIException, NotFound, ParseError, Throttled
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
-from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from django_agreements.api import raise_pydantic_as_drf
-from django_agreements.api.public.authentication import APIKeyAuthentication
-from django_agreements.api.public.permissions import HasAPIKeyOrJWT
 from django_agreements.api.public.throttling import CookieConsentThrottle
 from django_agreements.models import CookieConsent
 from django_agreements.schemas.requests.cookie_consent import CookieConsentRequest
@@ -56,7 +53,6 @@ _ERROR_CODES = [
     (InvalidCookieChoice, "INVALID_REQUEST"),
     (NotFound, "NOT_FOUND"),
     (StaleRevisionConflict, "STALE_REVISION"),
-    (NotAuthenticated, "UNAUTHORIZED"),
     (Throttled, "RATE_LIMITED"),
 ]
 
@@ -149,8 +145,8 @@ def _record(channel_idx: str, data: CookieConsentRequest) -> CookieConsent:
 class PublicCookieConsentViewSet(_EnvelopeErrorsMixin, viewsets.ViewSet):
     """Anonymous log of cookie banner decisions."""
 
-    authentication_classes = [APIKeyAuthentication, JWTAuthentication]  # a stale JWT beside a valid key is ignored
-    permission_classes = [HasAPIKeyOrJWT]
+    authentication_classes = []
+    permission_classes = [AllowAny]
     throttle_classes = [CookieConsentThrottle]
 
     @extend_schema(
@@ -159,7 +155,7 @@ class PublicCookieConsentViewSet(_EnvelopeErrorsMixin, viewsets.ViewSet):
             "Logs one decision for the banner `revision` in `language`. `categories` must list every banner "
             "category; required ones are true, `accept_all` means all true, `reject_all`/`withdraw` mean every "
             "optional one false. 409 `STALE_REVISION` when a newer banner was published — fetch it again. "
-            "Requires a valid `X-API-KEY` or a JWT (401 UNAUTHORIZED). Errors use the v2 envelope (error, message, debug_id, details)."
+            "Anonymous: no key or JWT (the log carries no personal data), throttled per client address. Errors use the v2 envelope (error, message, debug_id, details)."
         ),
         tags=_TAGS,
         parameters=[_CHANNEL_PARAMETER],
@@ -169,7 +165,6 @@ class PublicCookieConsentViewSet(_EnvelopeErrorsMixin, viewsets.ViewSet):
             400: OpenApiResponse(
                 description="Malformed body (VALIDATION_ERROR) or a decision not fitting the banner (INVALID_REQUEST)"
             ),
-            401: OpenApiResponse(description="Missing or invalid X-API-KEY and no JWT (UNAUTHORIZED)"),
             404: OpenApiResponse(description="Unknown channel or no published banner (NOT_FOUND)"),
             409: OpenApiResponse(description="Stale banner revision (STALE_REVISION)"),
             429: OpenApiResponse(description="Too many requests (RATE_LIMITED)"),

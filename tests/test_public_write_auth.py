@@ -31,7 +31,6 @@ WRITES = [
     ("public-consent-withdraw", {}, {"slugs": ["terms-of-service"]}),
     ("public-newsletter-subscribe", {}, {"email": EMAIL}),
     ("public-order-agreements", {"order_id": str(uuid.uuid4())}, {"email": EMAIL, "slugs": [], "language": "en"}),
-    ("public-cookie-consent-submit", {}, {}),
 ]
 
 
@@ -69,10 +68,21 @@ def test_jwt_passes_the_gate(user_client, name, extra, body):
     assert user_client.post(_url(name, **extra), body, format="json").status_code in {200, 201, 400, 404}
 
 
-def test_cookie_endpoint_answers_401_in_the_envelope(api_client):
+def test_cookie_consent_post_stays_anonymous(api_client):
+    # no banner published: 404 from the service, not 401 from the gate
     response = api_client.post(_url("public-cookie-consent-submit"), {}, format="json")
-    assert response.status_code == 401
-    assert response.json()["error"] == "UNAUTHORIZED"
+    assert response.status_code == 400
+
+
+def test_stored_ip_follows_client_ip_header(keyed_client, settings, published_version):
+    from django_agreements.models import ConsentRecord
+
+    settings.CLIENT_IP_HEADER = "HTTP_CF_CONNECTING_IP"
+    body = {"email": EMAIL, "agreements": [{"slug": "terms-of-service", "granted": True}], "source": "checkout"}
+    keyed_client.post(
+        _url("public-consent-submit"), body, format="json", REMOTE_ADDR="10.0.0.1", HTTP_CF_CONNECTING_IP="198.51.100.7"
+    )
+    assert ConsentRecord.objects.get(email=EMAIL).ip_address == "198.51.100.7"
 
 
 def test_token_links_and_gets_need_no_key(api_client):

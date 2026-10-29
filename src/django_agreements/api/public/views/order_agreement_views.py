@@ -5,6 +5,7 @@
 """Public API views for order agreement snapshots."""
 
 from django.core.exceptions import ObjectDoesNotExist
+from django_utils.api.client_ip import get_client_ip
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from process_logger import ProcessLogger
 from pydantic import ValidationError
@@ -60,7 +61,7 @@ class PublicOrderAgreementViewSet(viewsets.ViewSet):
         except ValidationError as exc:
             raise_pydantic_as_drf(exc)
 
-        ip_address = request.META.get("REMOTE_ADDR")
+        ip_address = get_client_ip(request)
         user_agent = request.META.get("HTTP_USER_AGENT", "")[:2048]
 
         try:
