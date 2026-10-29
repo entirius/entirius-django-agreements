@@ -112,9 +112,9 @@ class TestPublicDefinitions:
 
 @pytest.mark.django_db
 class TestPublicConsent:
-    def test_submit_consent(self, api_client, published_version):
+    def test_submit_consent(self, keyed_client, published_version):
         url = _public_consent_submit_url("default-europe")
-        response = api_client.post(
+        response = keyed_client.post(
             url,
             {
                 "email": "user@test.com",
@@ -144,9 +144,9 @@ class TestPublicConsent:
         assert consent_service.is_consented(regular_user.email, "terms-of-service") is True
         assert consent_service.is_consented("someone-else@evil.com", "terms-of-service") is False
 
-    def test_submit_consent_no_published_version(self, api_client, definition):
+    def test_submit_consent_no_published_version(self, keyed_client, definition):
         url = _public_consent_submit_url("default-europe")
-        response = api_client.post(
+        response = keyed_client.post(
             url,
             {
                 "email": "user@test.com",
@@ -196,18 +196,18 @@ class TestPublicConsent:
 
 @pytest.mark.django_db
 class TestPublicOrderAgreements:
-    def test_record_order_agreements(self, api_client, published_version):
+    def test_record_order_agreements(self, keyed_client, published_version):
         order_id = uuid.uuid4()
         url = _public_order_agreements_url("default-europe", order_id)
-        response = api_client.post(
+        response = keyed_client.post(
             url, {"email": "customer@test.com", "slugs": ["terms-of-service"], "language": "en"}, format="json"
         )
         assert response.status_code == 201
 
-    def test_record_nonexistent_agreement(self, api_client):
+    def test_record_nonexistent_agreement(self, keyed_client):
         order_id = uuid.uuid4()
         url = _public_order_agreements_url("default-europe", order_id)
-        response = api_client.post(
+        response = keyed_client.post(
             url, {"email": "customer@test.com", "slugs": ["nonexistent"], "language": "en"}, format="json"
         )
         assert response.status_code == 400

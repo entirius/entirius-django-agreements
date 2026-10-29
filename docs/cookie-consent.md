@@ -128,7 +128,7 @@ the fixture. It is not part of `default_agreements`.
 
 ## Front-End Contract
 
-Public endpoints, no authentication (no JWT, no `X-API-KEY`):
+Public endpoints. The GET needs no authentication; the POST needs a valid `X-API-KEY` header (the storefront key) or a JWT, else 401 `UNAUTHORIZED`:
 
 | Method | Path | Purpose |
 |---|---|---|

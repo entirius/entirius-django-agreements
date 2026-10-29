@@ -41,7 +41,8 @@ urlpatterns = [
 No setting is required: every setting has a default. Reference:
 https://github.com/entirius/entirius-django-agreements/blob/develop/docs/configuration.md
 
-The newsletter subscribe endpoint takes a key in the `X-API-KEY` header. Where `django_access` is installed the key
+Every public write endpoint (consent create, withdraw, newsletter subscribe, order agreements, cookie consent) needs a
+key in the `X-API-KEY` header or a JWT; the signed-token links (confirm, unsubscribe) and the GETs do not. Where `django_access` is installed the key
 is an access token with the scope `agreements.subscribe`:
 
 ```shell

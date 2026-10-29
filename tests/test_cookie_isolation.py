@@ -70,7 +70,7 @@ class TestApi:
     def test_admin_definitions_keep_cookies(self, admin_client, banner, terms):
         assert _slugs(admin_client.get(reverse("admin-definition-list"))) == {COOKIES, TERMS}
 
-    def test_public_consent_submit_with_cookies_slug_is_400(self, api_client, banner):
+    def test_public_consent_submit_with_cookies_slug_is_400(self, keyed_client, banner):
         url = reverse("public-consent-submit", kwargs={"channel_idx": "default-europe"})
         payload = {"email": EMAIL, "agreements": [{"slug": COOKIES, "granted": True}], "source": "checkout"}
-        assert api_client.post(url, payload, format="json").status_code == 400
+        assert keyed_client.post(url, payload, format="json").status_code == 400

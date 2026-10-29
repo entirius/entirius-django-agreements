@@ -1,5 +1,24 @@
 # Changelog
 
+## 3.0.1 — 2026-10-29
+
+### Security
+
+- Behaviour change: the public write endpoints now require a valid `X-API-KEY` or a JWT: consent create, consent
+  withdraw, newsletter subscribe, order agreements and the cookie consent POST. A missing or refused key answers 401
+  (`UNAUTHORIZED` in the cookie endpoint's v2 envelope). They used to accept anonymous callers, so anyone could record
+  or forge consent for any address and bypass double opt-in. Storefronts must send the key (it is public in the
+  bundle; it keeps anonymous scripts off the writes). Left open: the GETs (definitions, cookie banner), consent status
+  (JWT, unchanged), and the token links confirm and unsubscribe, where the signed token is the proof.
+- Consent withdraw still needs a JWT (the e-mail comes from it); a key alone is refused with 401.
+- Per-client throttles read the client address from `settings.CLIENT_IP_HEADER` (new, optional, e.g.
+  `HTTP_CF_CONNECTING_IP`) through `django_utils.api.client_ip.ClientIPThrottleMixin`; without it the DRF address is
+  used as before. Behind a proxy without it, every client shared the proxy's bucket.
+- New throttle scope `agreements_subscribe_address` (fallback `3/hour`, keyed on a hash of the normalised e-mail
+  address, never the address): caps the confirmation mails one address can receive. Subscribe answers 429 beyond it.
+  Existing scopes and rates are unchanged.
+- Requires `entirius-django-utils>=2.4.1`.
+
 ## 3.0.0 — 2026-10-12
 
 - OpenAPI: URL examples use `https://api.example.com` and `https://shop.example.com` instead of `localhost`.

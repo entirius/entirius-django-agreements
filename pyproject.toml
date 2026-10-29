@@ -27,7 +27,7 @@ dependencies = [
     "pydantic>=2.0",
     "drf-spectacular>=0.27",
     "entirius-py-process-logger>=2.0.0",
-    "entirius-django-utils>=2.0.0",
+    "entirius-django-utils>=2.4.1",
     "entirius-django-regional>=2.0.0",
 ]
 

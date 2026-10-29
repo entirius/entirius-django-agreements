@@ -30,16 +30,16 @@ def _order_emails(emails):
     return patch.object(order_agreement_service, "_order_emails", return_value=emails)
 
 
-def test_write_is_throttled_after_its_limit(api_client):
-    statuses = [api_client.post(_url(), {}, format="json").status_code for _ in range(21)]
+def test_write_is_throttled_after_its_limit(keyed_client):
+    statuses = [keyed_client.post(_url(), {}, format="json").status_code for _ in range(21)]
     assert 429 not in statuses[:20]
     assert statuses[20] == 429
 
 
 @pytest.mark.parametrize("order_emails", [[], ["someone.else@test.com"]], ids=["no-such-order", "wrong-email"])
-def test_unknown_order_and_foreign_email_get_the_same_404(api_client, published_version, order_emails):
+def test_unknown_order_and_foreign_email_get_the_same_404(keyed_client, published_version, order_emails):
     with _order_emails(order_emails) as lookup:
-        response = api_client.post(_url(), BODY, format="json")
+        response = keyed_client.post(_url(), BODY, format="json")
     assert response.status_code == 404
     assert response.json() == {"detail": "Order not found."}
     assert lookup.call_args.args[1] == "default-europe"
@@ -47,22 +47,22 @@ def test_unknown_order_and_foreign_email_get_the_same_404(api_client, published_
     assert not ConsentRecord.objects.exists()
 
 
-def test_malformed_order_id_is_not_an_order(api_client, published_version):
+def test_malformed_order_id_is_not_an_order(keyed_client, published_version):
     url = reverse("public-order-agreements", kwargs={"channel_idx": "default-europe", "order_id": "not-a-uuid"})
-    assert api_client.post(url, BODY, format="json").status_code == 404
+    assert keyed_client.post(url, BODY, format="json").status_code == 404
     assert not OrderAgreementSnapshot.objects.exists()
 
 
-def test_order_email_matches_case_insensitively(api_client, published_version):
+def test_order_email_matches_case_insensitively(keyed_client, published_version):
     with _order_emails([None, " Customer@Test.com "]):
-        response = api_client.post(_url(), BODY, format="json")
+        response = keyed_client.post(_url(), BODY, format="json")
     assert response.status_code == 201
     assert OrderAgreementSnapshot.objects.count() == 1
 
 
-def test_without_checkout_the_write_is_accepted(api_client, published_version):
+def test_without_checkout_the_write_is_accepted(keyed_client, published_version):
     with _order_emails(None):
-        assert api_client.post(_url(), BODY, format="json").status_code == 201
+        assert keyed_client.post(_url(), BODY, format="json").status_code == 201
 
 
 class _RaisingModule(types.ModuleType):
@@ -117,31 +117,31 @@ def test_order_lookup_is_scoped_to_the_order_and_the_channel(monkeypatch, row, e
     assert orders.fields == ("billing_email", "shipping_email")
 
 
-def test_concurrent_duplicate_write_is_absorbed(api_client, published_version):
+def test_concurrent_duplicate_write_is_absorbed(keyed_client, published_version):
     url = _url()
     with _order_emails(None):
-        api_client.post(url, BODY, format="json")
+        keyed_client.post(url, BODY, format="json")
         with patch.object(order_agreement_service, "_recorded_version_ids", return_value=set()):
-            assert api_client.post(url, BODY, format="json").status_code == 201
+            assert keyed_client.post(url, BODY, format="json").status_code == 201
     assert OrderAgreementSnapshot.objects.count() == 1
     assert ConsentRecord.objects.count() == 1
 
 
-def test_second_write_for_the_same_order_creates_no_duplicates(api_client, published_version):
+def test_second_write_for_the_same_order_creates_no_duplicates(keyed_client, published_version):
     url = _url()
     with _order_emails(None):
-        first = api_client.post(url, BODY, format="json")
-        second = api_client.post(url, {**BODY, "slugs": ["terms-of-service", "terms-of-service"]}, format="json")
+        first = keyed_client.post(url, BODY, format="json")
+        second = keyed_client.post(url, {**BODY, "slugs": ["terms-of-service", "terms-of-service"]}, format="json")
     assert (first.status_code, second.status_code) == (201, 201)
     assert OrderAgreementSnapshot.objects.count() == 1
     assert ConsentRecord.objects.count() == 1
 
 
-def test_a_cookies_definition_is_not_an_order_agreement(api_client, cookie_definition, make_cookie_version):
+def test_a_cookies_definition_is_not_an_order_agreement(keyed_client, cookie_definition, make_cookie_version):
     make_cookie_version(cookie_definition)
     body = {**BODY, "slugs": [cookie_definition.slug]}
     with _order_emails([EMAIL]):
-        response = api_client.post(_url(), body, format="json")
+        response = keyed_client.post(_url(), body, format="json")
     assert response.status_code == 400
     assert not OrderAgreementSnapshot.objects.exists()
     assert not ConsentRecord.objects.exists()
