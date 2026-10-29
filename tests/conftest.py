@@ -235,3 +235,11 @@ def make_api_key(settings):
         return raw
 
     return make_api_key
+
+
+@pytest.fixture
+def keyed_client(make_api_key):
+    """A client sending a valid X-API-KEY, as the storefront does."""
+    client = APIClient()
+    client.credentials(HTTP_X_API_KEY=make_api_key())
+    return client

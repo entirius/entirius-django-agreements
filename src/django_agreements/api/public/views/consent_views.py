@@ -8,12 +8,13 @@ import uuid
 
 from django.conf import settings as django_settings
 from django.core.exceptions import ObjectDoesNotExist
+from django_utils.api.client_ip import get_client_ip
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from process_logger import ProcessLogger
 from pydantic import ValidationError
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import AuthenticationFailed, ParseError
+from rest_framework.exceptions import ParseError
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -22,7 +23,13 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from django_agreements import settings as agreements_settings
 from django_agreements.api import raise_pydantic_as_drf
 from django_agreements.api.public.authentication import APIKeyAuthentication
-from django_agreements.api.public.throttling import ConsentSubmitThrottle, SubscribeThrottle, TokenActionThrottle
+from django_agreements.api.public.permissions import HasAPIKeyOrJWT
+from django_agreements.api.public.throttling import (
+    ConsentSubmitThrottle,
+    SubscribeAddressThrottle,
+    SubscribeThrottle,
+    TokenActionThrottle,
+)
 from django_agreements.schemas.requests.consent import (
     ConsentSubmitRequest,
     ConsentWithdrawRequest,
@@ -78,12 +85,15 @@ def _send_confirmation_email(email: str, channel_idx: str, language: str | None)
 
 # as_view({...}) routing ignores @action(throttle_classes=...): every public action is mapped here.
 _ACTION_THROTTLES = {
-    "create": ConsentSubmitThrottle,
-    "withdraw": ConsentSubmitThrottle,
-    "subscribe": SubscribeThrottle,
-    "confirm": TokenActionThrottle,
-    "unsubscribe": TokenActionThrottle,
+    "create": [ConsentSubmitThrottle],
+    "withdraw": [ConsentSubmitThrottle],
+    "subscribe": [SubscribeThrottle, SubscribeAddressThrottle],
+    "confirm": [TokenActionThrottle],
+    "unsubscribe": [TokenActionThrottle],
 }
+
+# Writes keyed by an e-mail need the key or a JWT; confirm/unsubscribe carry a signed token, status_check checks the JWT.
+_KEYED_ACTIONS = frozenset({"create", "withdraw", "subscribe"})
 
 
 class PublicConsentViewSet(viewsets.ViewSet):
@@ -92,9 +102,14 @@ class PublicConsentViewSet(viewsets.ViewSet):
     authentication_classes = [JWTAuthentication, APIKeyAuthentication]
     permission_classes = [AllowAny]
 
+    def get_permissions(self) -> list:
+        if self.action in _KEYED_ACTIONS:
+            return [HasAPIKeyOrJWT()]
+        return super().get_permissions()
+
     def get_throttles(self) -> list:
-        if throttle := _ACTION_THROTTLES.get(self.action):
-            return [throttle()]
+        if throttles := _ACTION_THROTTLES.get(self.action):
+            return [throttle() for throttle in throttles]
         return super().get_throttles()
 
     @extend_schema(
@@ -103,7 +118,8 @@ class PublicConsentViewSet(viewsets.ViewSet):
             "Record consent decisions for multiple agreements at once. "
             "When called with a valid JWT the email is always taken from the token — "
             "the body `email` field is ignored. "
-            "Unauthenticated (guest checkout) requests use the body email."
+            "Requires a valid `X-API-KEY` or a JWT; with a key alone (guest checkout) the body email is used and marketing agreements are refused (400): "
+            "use newsletter subscribe."
         ),
         tags=["Consents"],
         parameters=[
@@ -111,7 +127,11 @@ class PublicConsentViewSet(viewsets.ViewSet):
                 name="channel_idx", location=OpenApiParameter.PATH, type=str, description="Channel identifier"
             )
         ],
-        responses={201: {"description": "Consent recorded"}, 400: {"description": "Validation error"}},
+        responses={
+            201: {"description": "Consent recorded"},
+            400: {"description": "Validation error"},
+            401: {"description": "Missing or invalid X-API-KEY and no JWT"},
+        },
     )
     @action(detail=False, methods=["post"])
     def create(self, request: Request, channel_idx: str, **kwargs) -> Response:
@@ -122,9 +142,10 @@ class PublicConsentViewSet(viewsets.ViewSet):
 
         # Authenticated users are bound to their JWT identity — body email is ignored.
         # Guest (unauthenticated) flows use the email supplied in the request body.
-        email = request.user.email if (request.user and request.user.is_authenticated) else data.email
+        is_jwt = bool(request.user and request.user.is_authenticated)
+        email = request.user.email if is_jwt else data.email
 
-        ip_address = request.META.get("REMOTE_ADDR")
+        ip_address = get_client_ip(request)
         user_agent = request.META.get("HTTP_USER_AGENT", "")[:2048]
 
         try:
@@ -135,6 +156,7 @@ class PublicConsentViewSet(viewsets.ViewSet):
                 channel_idx=channel_idx,
                 ip_address=ip_address,
                 user_agent=user_agent,
+                email_verified=is_jwt,
             )
         except ObjectDoesNotExist as e:
             logger.warning(e)
@@ -207,7 +229,7 @@ class PublicConsentViewSet(viewsets.ViewSet):
             raise_pydantic_as_drf(exc)
 
         email = request.user.email
-        ip_address = request.META.get("REMOTE_ADDR")
+        ip_address = get_client_ip(request)
         user_agent = request.META.get("HTTP_USER_AGENT", "")[:2048]
 
         try:
@@ -231,7 +253,10 @@ class PublicConsentViewSet(viewsets.ViewSet):
 
     @extend_schema(
         summary="Subscribe to newsletter",
-        description="Start double opt-in flow for marketing-email consent.",
+        description=(
+            "Start double opt-in flow for marketing-email consent. Requires a valid `X-API-KEY` or a JWT. "
+            "Limited per client address and per e-mail address (429)."
+        ),
         tags=["Consents"],
         parameters=[
             OpenApiParameter(
@@ -241,14 +266,12 @@ class PublicConsentViewSet(viewsets.ViewSet):
         responses={
             201: {"description": "Confirmation will be sent if eligible"},
             400: {"description": "Validation error"},
+            401: {"description": "Missing or invalid X-API-KEY and no JWT"},
+            429: {"description": "Too many requests"},
         },
     )
     @action(detail=False, methods=["post"])
     def subscribe(self, request: Request, channel_idx: str, **kwargs) -> Response:
-        is_authenticated = request.user and request.user.is_authenticated
-        if not is_authenticated and request.auth != "api_key":
-            raise AuthenticationFailed("API key or authentication required.")
-
         try:
             data = NewsletterSubscribeRequest(**request.data)
         except ValidationError as exc:

@@ -18,6 +18,7 @@ from rest_framework.authentication import BaseAuthentication
 
 SUBSCRIBE_SCOPE = "agreements.subscribe"
 _HEADER = "HTTP_X_API_KEY"
+API_KEY_AUTH = "api_key"
 
 
 class APIKeyAuthentication(BaseAuthentication):
@@ -27,7 +28,7 @@ class APIKeyAuthentication(BaseAuthentication):
         key = request.META.get(_HEADER)
         if not key or not _key_is_valid(request, key):
             return None  # Let other auth backends try (e.g., JWT)
-        return (None, "api_key")
+        return (None, API_KEY_AUTH)
 
     def authenticate_header(self, request):
         return "X-API-KEY"

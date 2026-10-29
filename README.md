@@ -41,7 +41,8 @@ urlpatterns = [
 No setting is required: every setting has a default. Reference:
 https://github.com/entirius/entirius-django-agreements/blob/develop/docs/configuration.md
 
-The newsletter subscribe endpoint takes a key in the `X-API-KEY` header. Where `django_access` is installed the key
+Every public write endpoint (consent create, withdraw, newsletter subscribe, order agreements) needs a
+key in the `X-API-KEY` header or a JWT; the signed-token links (confirm, unsubscribe), the cookie consent POST and the GETs do not. Where `django_access` is installed the key
 is an access token with the scope `agreements.subscribe`:
 
 ```shell
@@ -49,6 +50,11 @@ python manage.py access_token create --application storefront --create-applicati
 ```
 
 Without `django_access`, the key is the value of the `AGREEMENTS_API_KEY` setting.
+
+`POST consents/` with a key alone (no JWT) refuses every `marketing`-category agreement with HTTP 400: the body email
+is only a claim, so marketing consent goes through newsletter subscribe (double opt-in). With a JWT it is accepted.
+`consent_service.record_multiple_consents(..., email_verified=False)` enforces this; the default is `True` for
+internal callers.
 
 ## Quick start
 

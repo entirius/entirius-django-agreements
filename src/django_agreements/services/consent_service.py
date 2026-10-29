@@ -16,6 +16,8 @@ from django_agreements.models.consent_record import (
 from django_agreements.services import token_service
 from django_agreements.services.version_service import COOKIES_CATEGORY
 
+MARKETING_CATEGORY = "marketing"
+
 # System consent display rules — controls special behavior beyond display_contexts.
 # always_show: True = always render checkbox (e.g., terms must be re-accepted per order).
 # skip_if_authenticated: True = hide if user is logged in and already consented.
@@ -56,6 +58,15 @@ def record_consent(
     )
 
 
+def _refuse_marketing(definitions_by_slug: dict[str, AgreementDefinition]) -> None:
+    marketing = sorted(slug for slug, defn in definitions_by_slug.items() if defn.category == MARKETING_CATEGORY)
+    if marketing:
+        raise ValueError(
+            f"Marketing consent ({', '.join(marketing)}) needs a verified address: "
+            "use newsletter/subscribe (double opt-in) or sign in."
+        )
+
+
 def record_multiple_consents(
     *,
     email: str,
@@ -65,11 +76,15 @@ def record_multiple_consents(
     customer_id: int | None = None,
     ip_address: str | None = None,
     user_agent: str = "",
+    email_verified: bool = True,
 ) -> list[ConsentRecord]:
     """Record multiple consent decisions at once.
 
     agreements: [{"slug": "terms-of-service", "granted": True}, ...]
 
+    ``email_verified=False`` (the caller only claims the address, e.g. a public key without a JWT) refuses every
+    marketing-category definition, grant and withdrawal alike: those go through ``request_consent`` (double opt-in)
+    or a signed unsubscribe token. Internal callers (CRM, imports) keep the default.
     """
     slugs = [item["slug"] for item in agreements]
 
@@ -80,6 +95,9 @@ def record_multiple_consents(
     for slug in slugs:
         if slug not in definitions_by_slug:
             raise ValueError(f"Agreement '{slug}' not found.")
+
+    if not email_verified:
+        _refuse_marketing(definitions_by_slug)
 
     versions_by_definition_id = {
         v.definition_id: v
