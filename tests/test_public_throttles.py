@@ -27,7 +27,8 @@ pytestmark = pytest.mark.django_db
         ("public-consent-unsubscribe", "get", 10),
     ],
 )
-def test_action_is_throttled_after_its_limit(api_client, channel, name, method, limit):
+def test_action_is_throttled_after_its_limit(keyed_client, channel, name, method, limit):
+    api_client = keyed_client
     url = reverse(name, kwargs={"channel_idx": channel.idx})
     statuses = [getattr(api_client, method)(url, {}, format="json").status_code for _ in range(limit + 1)]
     assert 429 not in statuses[:limit]
@@ -56,7 +57,8 @@ def test_scope_overrides_and_the_fallback_holds(rates, expected):
         assert ConsentSubmitThrottle().rate == expected
 
 
-def test_order_agreement_and_cookie_consent_throttles_count_separately(api_client, channel):
+def test_order_agreement_and_cookie_consent_throttles_count_separately(keyed_client, channel):
+    api_client = keyed_client
     order_url = reverse("public-order-agreements", kwargs={"channel_idx": channel.idx, "order_id": str(uuid.uuid4())})
     cookie_url = reverse("public-cookie-consent-submit", kwargs={"channel_idx": channel.idx})
     for _ in range(30):

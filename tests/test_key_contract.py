@@ -31,10 +31,10 @@ def _no_confirmation_email():
         yield
 
 
-def _subscribe(api_client, key: str | None, channel_idx: str = "default-europe"):
+def _subscribe(api_client, key: str | None, channel_idx: str = "default-europe", email: str = SUBSCRIBE_BODY["email"]):
     url = reverse("public-newsletter-subscribe", kwargs={"channel_idx": channel_idx})
     headers = {} if key is None else {"HTTP_X_API_KEY": key}
-    return api_client.post(url, SUBSCRIBE_BODY, format="json", **headers)
+    return api_client.post(url, {"email": email}, format="json", **headers)
 
 
 def test_no_jwt_and_no_key_is_401(api_client, make_api_key):
@@ -99,5 +99,5 @@ def test_legacy_empty_setting_refuses_every_key(api_client, settings, without_ac
 
 def test_subscribe_is_throttled_for_anonymous_callers(api_client, make_api_key):
     raw = make_api_key()
-    statuses = [_subscribe(api_client, raw).status_code for _ in range(6)]
+    statuses = [_subscribe(api_client, raw, email=f"s{n}@example.com").status_code for n in range(6)]
     assert statuses == [201] * 5 + [429]

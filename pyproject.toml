@@ -1,6 +1,6 @@
 [project]
 name = "entirius-django-agreements"
-version = "3.0.0"
+version = "3.0.1"
 description = "Consent and agreements module for Entirius: versioned agreement texts, consent audit trail and order snapshots"
 keywords = ["django", "ecommerce", "entirius", "consent", "gdpr", "agreements", "newsletter"]
 classifiers = [
@@ -27,7 +27,7 @@ dependencies = [
     "pydantic>=2.0",
     "drf-spectacular>=0.27",
     "entirius-py-process-logger>=2.0.0",
-    "entirius-django-utils>=2.0.0",
+    "entirius-django-utils>=2.4.2",
     "entirius-django-regional>=2.0.0",
 ]
 

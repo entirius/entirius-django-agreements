@@ -155,7 +155,7 @@ class PublicCookieConsentViewSet(_EnvelopeErrorsMixin, viewsets.ViewSet):
             "Logs one decision for the banner `revision` in `language`. `categories` must list every banner "
             "category; required ones are true, `accept_all` means all true, `reject_all`/`withdraw` mean every "
             "optional one false. 409 `STALE_REVISION` when a newer banner was published — fetch it again. "
-            "Errors use the v2 envelope (error, message, debug_id, details)."
+            "Anonymous: no key or JWT (the log carries no personal data), throttled per client address. Errors use the v2 envelope (error, message, debug_id, details)."
         ),
         tags=_TAGS,
         parameters=[_CHANNEL_PARAMETER],
