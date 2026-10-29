@@ -152,3 +152,35 @@ def test_throttle_ignores_the_header_when_unset(api_client, settings):
     for n in range(10):
         api_client.post(url, {}, format="json", REMOTE_ADDR="10.0.0.1", HTTP_CF_CONNECTING_IP=f"198.51.100.{n}")
     assert api_client.post(url, {}, format="json", REMOTE_ADDR="10.0.0.1").status_code == 429
+
+
+def _consent(client, slug: str, granted: bool, email: str = EMAIL):
+    body = {"email": email, "agreements": [{"slug": slug, "granted": granted}], "source": "checkout"}
+    return client.post(_url("public-consent-submit"), body, format="json")
+
+
+@pytest.mark.parametrize("granted", [True, False])
+def test_key_alone_cannot_record_marketing_consent(keyed_client, granted):
+    from django_agreements.models import ConsentRecord
+
+    response = _consent(keyed_client, "marketing-email", granted)
+    assert response.status_code == 400
+    assert "newsletter" in str(response.json()).lower()
+    assert not ConsentRecord.objects.exists()
+
+
+def test_key_alone_records_a_non_marketing_consent(keyed_client, published_version):
+    assert _consent(keyed_client, "terms-of-service", True).status_code == 201
+
+
+def test_jwt_records_marketing_consent(user_client):
+    assert _consent(user_client, "marketing-email", True).status_code == 201
+
+
+def test_service_default_keeps_internal_callers_working(marketing_published_version):
+    from django_agreements.services import consent_service
+
+    agreements = [{"slug": "marketing-email", "granted": True}]
+    assert consent_service.record_multiple_consents(email=EMAIL, agreements=agreements, source="crm")
+    with pytest.raises(ValueError, match="verified"):
+        consent_service.record_multiple_consents(email=EMAIL, agreements=agreements, source="crm", email_verified=False)

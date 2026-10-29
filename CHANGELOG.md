@@ -5,12 +5,16 @@
 ### Security
 
 - Behaviour change: the public write endpoints now require a valid `X-API-KEY` or a JWT: consent create, consent
-  withdraw, newsletter subscribe, order agreements and the cookie consent POST. A missing or refused key answers 401
-  (`UNAUTHORIZED` in the cookie endpoint's v2 envelope). They used to accept anonymous callers, so anyone could record
+  withdraw, newsletter subscribe and order agreements. A missing or refused key answers 401. They used to accept anonymous callers, so anyone could record
   or forge consent for any address and bypass double opt-in. Storefronts must send the key (it is public in the
   bundle; it keeps anonymous scripts off the writes). Left open: the cookie consent POST (the anonymous log carries no personal data; it keeps its per-client
   throttle), the GETs (definitions, cookie banner), consent status
   (JWT, unchanged), and the token links confirm and unsubscribe, where the signed token is the proof.
+- Consent create with a key alone (no JWT) refuses every `marketing`-category agreement, grant or withdrawal, with
+  HTTP 400 pointing to newsletter subscribe. The body email is only a claim there, so the key could subscribe or
+  unsubscribe a stranger and skip double opt-in. Enforced in `consent_service.record_multiple_consents` through the
+  new `email_verified` parameter (default `True`, so CRM and other internal callers are unchanged; the public view
+  passes `False` without a JWT). A JWT keeps the old behaviour.
 - Consent withdraw still needs a JWT (the e-mail comes from it); a key alone is refused with 401.
 - Per-client throttles read the client address from `settings.CLIENT_IP_HEADER` (new, optional, e.g.
   `HTTP_CF_CONNECTING_IP`) through `django_utils.api.client_ip.ClientIPThrottleMixin`; without it the DRF address is

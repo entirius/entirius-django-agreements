@@ -118,7 +118,8 @@ class PublicConsentViewSet(viewsets.ViewSet):
             "Record consent decisions for multiple agreements at once. "
             "When called with a valid JWT the email is always taken from the token — "
             "the body `email` field is ignored. "
-            "Requires a valid `X-API-KEY` or a JWT; with a key alone (guest checkout) the body email is used."
+            "Requires a valid `X-API-KEY` or a JWT; with a key alone (guest checkout) the body email is used and marketing agreements are refused (400): "
+            "use newsletter subscribe."
         ),
         tags=["Consents"],
         parameters=[
@@ -141,7 +142,8 @@ class PublicConsentViewSet(viewsets.ViewSet):
 
         # Authenticated users are bound to their JWT identity — body email is ignored.
         # Guest (unauthenticated) flows use the email supplied in the request body.
-        email = request.user.email if (request.user and request.user.is_authenticated) else data.email
+        is_jwt = bool(request.user and request.user.is_authenticated)
+        email = request.user.email if is_jwt else data.email
 
         ip_address = get_client_ip(request)
         user_agent = request.META.get("HTTP_USER_AGENT", "")[:2048]
@@ -154,6 +156,7 @@ class PublicConsentViewSet(viewsets.ViewSet):
                 channel_idx=channel_idx,
                 ip_address=ip_address,
                 user_agent=user_agent,
+                email_verified=is_jwt,
             )
         except ObjectDoesNotExist as e:
             logger.warning(e)

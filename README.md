@@ -45,6 +45,11 @@ Every public write endpoint (consent create, withdraw, newsletter subscribe, ord
 key in the `X-API-KEY` header or a JWT; the signed-token links (confirm, unsubscribe), the cookie consent POST and the GETs do not. Where `django_access` is installed the key
 is an access token with the scope `agreements.subscribe`:
 
+`POST consents/` with a key alone (no JWT) refuses every `marketing`-category agreement with HTTP 400: the body email
+is only a claim, so marketing consent goes through newsletter subscribe (double opt-in). With a JWT it is accepted.
+`consent_service.record_multiple_consents(..., email_verified=False)` enforces this; the default is `True` for
+internal callers.
+
 ```shell
 python manage.py access_token create --application storefront --create-application --scope agreements.subscribe --channel default
 ```
