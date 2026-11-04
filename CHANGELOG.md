@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.1.0 — 2026-11-04
+
+### Added
+
+- Configuration health check `agreements.storefront_url` (tag `entirius_config`): warns while `STOREFRONT_BASE_URL`
+  is not set, because the newsletter confirmation and unsubscribe links then point at the development default
+  `http://localhost:3000`.
+
 ## 3.0.1 — 2026-10-29
 
 ### Security
