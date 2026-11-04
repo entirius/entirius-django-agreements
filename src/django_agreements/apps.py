@@ -33,4 +33,5 @@ class DjangoAgreementsConfig(AppConfig):
     ]
 
     def ready(self) -> None:
+        import django_agreements.checks  # noqa: F401 — registers the configuration checks
         import django_agreements.signals  # noqa: F401

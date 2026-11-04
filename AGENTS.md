@@ -48,6 +48,7 @@ Tests need PostgreSQL: set `DATABASE_URL` (the default in `tests/settings.py` po
 
 - `management/commands/` — `sync_agreement_channels` (channels from PIM), `migrate_crm_consents`,
   `purge_cookie_consents` (retention purge of the cookie decision log).
+- `checks.py` — configuration health checks (`agreements.storefront_url`), registered in `AppConfig.ready()`.
 
 Layer rule: `API → Services → Models → DB`. No ORM in views.
 

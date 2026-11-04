@@ -38,7 +38,8 @@ urlpatterns = [
 ]
 ```
 
-No setting is required: every setting has a default. Reference:
+No setting is required: every setting has a default. Set `STOREFRONT_BASE_URL` in every environment anyway: the
+newsletter mails link to it, and the `agreements.storefront_url` health check warns while it is unset. Reference:
 https://github.com/entirius/entirius-django-agreements/blob/develop/docs/configuration.md
 
 Every public write endpoint (consent create, withdraw, newsletter subscribe, order agreements) needs a
