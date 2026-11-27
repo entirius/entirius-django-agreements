@@ -1,5 +1,27 @@
 # Changelog
 
+## 3.2.0 — 2026-11-27
+
+### Added
+
+- Management command `publish_cookie_banner`: loads the default cookie banner when absent and publishes its draft.
+  Idempotent: never re-loads an existing definition, never turns a published version back into a draft.
+- Management command `load_legal_pages`: loads the default legal pages (terms, privacy, newsletter-policy) with
+  ContentDB languages matched by ISO code and the `legal-page` content type matched by slug. A language that
+  does not exist is skipped with a printed note; re-running updates the rows in place.
+
+### Fixed
+
+- The default cookie banner (`cookie_banner` fixture) now carries German and Spanish texts besides Polish and
+  English. On a stack whose channels speak de or es it could not be published at all, because a global banner must
+  cover the languages of every channel. The "missing channel languages" error now also says the texts have to be
+  added to the draft before publishing. The publishing rule itself is unchanged.
+- The default legal pages no longer land under the wrong language. `loaddata legal_pages` attached the drafts to
+  ContentDB `Language` by fixed pk (1 = EN, 2 = PL, 3 = DE), so a database where pk 3 is ES showed the German text
+  as Spanish. Load them with `load_legal_pages`; plain `loaddata legal_pages` stays unsafe (the fixture header
+  and `docs/legal-pages.md` say so). The fixture header also named `ContentType pk=1 (static-page)` where the pages
+  use `legal-page`.
+
 ## 3.1.0 — 2026-11-04
 
 ### Added

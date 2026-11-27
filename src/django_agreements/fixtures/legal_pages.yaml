@@ -5,15 +5,21 @@
 #   - privacy             Privacy Policy (EN, PL, DE)
 #   - newsletter-policy   Newsletter Policy (EN, PL, DE)
 #
-# Load order (IMPORTANT):
-#   1. django_contentdb.cfg.yaml  — ContentType pk=1 (static-page), Language records
-#   2. This file                  — Content / Draft / Published / Route records
+# Load with `python manage.py load_legal_pages`, NOT `loaddata legal_pages`.
+# The fixture names languages by placeholder pk (ContentDB Language has no natural key), so a plain
+# `loaddata` attaches a text to whatever language holds that pk in your database (e.g. German text under
+# ES when pk=3 is ES). The command swaps the placeholders for the real rows matched by ISO code and skips
+# the variants whose language does not exist.
 #
-# Assumptions:
-#   ContentType pk=6  = legal-page
-#   Language pk=1     = EN
-#   Language pk=2     = PL
-#   Language pk=3     = DE
+# Load order (IMPORTANT):
+#   1. ContentDB config  — ContentType with slug `legal-page`, Language records (EN, PL, DE as wanted)
+#   2. This file         — Content / Draft / Published / Route records
+#
+# Placeholders (resolved by the command, never trusted as pks):
+#   Draft.content_type 6  = ContentType slug `legal-page`
+#   Draft.language     1  = EN
+#   Draft.language     2  = PL
+#   Draft.language     3  = DE
 #
 # PKs reserved by this fixture:
 #   Content      900-917  (odd = draft body, even = published snapshot)

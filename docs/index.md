@@ -53,8 +53,8 @@ Shipped via `fixtures/default_agreements.yaml`:
 
 All ship as drafts. Admin must set `summary_t9n` and publish before use.
 
-The cookie banner ships separately (`fixtures/cookie_banner.yaml`, slug `cookie-banner`, category `cookies`, PL/EN
-draft) — see [Cookie Consent](/volkanos/modules/agreements/cookie-consent/).
+The cookie banner ships separately (`fixtures/cookie_banner.yaml`, slug `cookie-banner`, category `cookies`, PL/EN/DE/ES
+draft; `publish_cookie_banner` loads and publishes it) — see [Cookie Consent](/volkanos/modules/agreements/cookie-consent/).
 
 ## Legal Clauses
 
