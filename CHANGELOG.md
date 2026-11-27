@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Management command `load_legal_pages`: loads the default legal pages (terms, privacy, newsletter-policy) with
+  ContentDB languages matched by ISO code and the `legal-page` content type matched by slug. A language that
+  does not exist is skipped with a printed note; re-running updates the rows in place.
+
+### Fixed
+
+- The default legal pages no longer land under the wrong language. `loaddata legal_pages` attached the drafts to
+  ContentDB `Language` by fixed pk (1 = EN, 2 = PL, 3 = DE), so a database where pk 3 is ES showed the German text
+  as Spanish. Load them with `load_legal_pages`; plain `loaddata legal_pages` stays unsafe (the fixture header
+  and `docs/legal-pages.md` say so). The fixture header also named `ContentType pk=1 (static-page)` where the pages
+  use `legal-page`.
+
 ## 3.1.0 — 2026-11-04
 
 ### Added
