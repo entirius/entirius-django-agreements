@@ -104,6 +104,23 @@ After editing:
 2. Create a new AgreementVersion only if the checkbox label (`summary_t9n`) changes
 3. Legal text change alone = just republish the ContentDB page (same AgreementVersion)
 
+## Default Legal Pages
+
+The module ships terms, privacy and newsletter-policy pages in English, Polish and German
+(`fixtures/legal_pages.yaml`). Load them with:
+
+```bash
+python manage.py load_legal_pages
+```
+
+ContentDB needs a content type with slug `legal-page` first. Languages are matched by ISO code (`EN`, `PL`,
+`DE`); a variant whose language does not exist in ContentDB is skipped and the command says so. It is safe
+to re-run: rows keep fixed pks and are updated in place.
+
+Do not use `loaddata legal_pages`. The fixture refers to languages by placeholder pk (1 = EN, 2 = PL, 3 = DE),
+and `Language` has no natural key, so `loaddata` attaches each text to whatever language holds that pk in your
+database. Where pk 3 is Spanish, the shop shows German terms under Spanish.
+
 ## API Endpoints
 
 | Endpoint | Method | Purpose |
@@ -123,3 +140,5 @@ Located in `django_agreements/services/content_history_service.py`:
 | `validate_legal_page_structure(content_json)` | Check structure compliance, return warnings |
 | `list_legal_snapshots(content_route, language)` | List all Published snapshots for a route |
 | `get_legal_text_at_time(content_route, at_time, language)` | Find snapshot active at a timestamp |
+
+`legal_pages_service.load_legal_pages()` backs the `load_legal_pages` command.

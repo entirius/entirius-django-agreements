@@ -35,6 +35,10 @@ INSTALLED_APPS = [
 if find_spec("django_access") and not os.environ.get("ENTIRIUS_TEST_NO_ACCESS"):
     INSTALLED_APPS.append("django_access")
 
+# Soft dependency: with django-contentdb importable (zeno) the legal pages loader is tested against real rows.
+if find_spec("django_contentdb"):
+    INSTALLED_APPS += ["django_filters", "django_contentdb"]
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
