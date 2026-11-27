@@ -108,13 +108,27 @@ revision, so every front end asks its visitors again (see [Front-End Contract](#
 ### Default fixture
 
 ```bash
-python manage.py loaddata cookie_banner
+python manage.py publish_cookie_banner
 ```
 
-Loads a global definition `cookie-banner` (pk 100) with one draft version (pk 100) in Polish and English — brand-free
-drafts for legal review. Load it **once**: a re-load resets both rows (the version becomes a draft again). Publish it
-with `POST /api/agreements/v2/admin/versions/100/publish/`; later text changes are a new version, never an edit of
-the fixture. It is not part of `default_agreements`.
+Loads the `cookie_banner` fixture when the definition is absent and publishes its draft. Safe to re-run: an existing
+definition is never re-loaded and a published banner is left alone. Without the command, load and publish by hand:
+
+```bash
+python manage.py loaddata cookie_banner
+# then POST /api/agreements/v2/admin/versions/100/publish/
+```
+
+The fixture is a global definition `cookie-banner` (pk 100) with one draft version (pk 100) in Polish, English,
+German and Spanish — brand-free drafts for legal review. Load it **once**: a plain `loaddata` re-load resets both
+rows (the version becomes a draft again). Later text changes are a new version, never an edit of the fixture. It is
+not part of `default_agreements`.
+
+The publishing rule stays strict on purpose: the banner text is legal text, so every language a channel sells in
+needs its own reviewed version; falling back to another language at read time is not a substitute. A stack whose
+channels speak another language (say `fr`) cannot publish the fixture as shipped: the error names the missing
+languages (`Cookie banner is missing channel languages: ['fr']`). Add the texts to the draft (`summary_t9n`, and in
+`cookie_banner` every category label and description, button and dialog text), then publish.
 
 ## Channels, Languages and Domains
 

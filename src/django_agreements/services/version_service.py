@@ -111,7 +111,10 @@ def _check_cookie_banner(version: AgreementVersion) -> None:
         )
     missing = _scope_languages(version.definition) - languages
     if missing:
-        raise ValueError(f"Cookie banner is missing channel languages: {sorted(missing)}.")
+        raise ValueError(
+            f"Cookie banner is missing channel languages: {sorted(missing)}. Add their texts to the draft "
+            "(summary_t9n and, in cookie_banner, every label, description, button and dialog text) before publishing."
+        )
     if _has_overlapping_cookie_definition(version.definition):
         raise ValueError("Another active cookies definition already covers this channel scope.")
 
