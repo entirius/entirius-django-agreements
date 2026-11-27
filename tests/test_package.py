@@ -46,7 +46,7 @@ def _texts(fields):
 
 def test_cookie_banner_fixture_config_is_valid(banner_version):
     config = CookieBannerConfig.model_validate(banner_version["cookie_banner"])
-    assert config.languages == set(banner_version["summary_t9n"]) == {"pl", "en"}
+    assert config.languages == set(banner_version["summary_t9n"]) == {"pl", "en", "de", "es"}
 
 
 def test_cookie_banner_fixture_is_stored_sanitised(banner_version):

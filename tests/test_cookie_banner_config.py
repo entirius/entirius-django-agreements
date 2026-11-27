@@ -256,3 +256,15 @@ class TestCookiePublishGuards:
         response = admin_client.post(_version_publish_url(100))
         assert response.status_code == 200
         assert response.json()["definition_slug"] == "cookie-banner"
+
+    def test_shipped_fixture_publishes_on_a_four_language_channel(self, admin_client, lang_pl, lang_en):
+        _channel("eu-store", lang_pl, lang_en, _language("es"), _language("de"))
+        call_command("loaddata", "cookie_banner", verbosity=0)
+        assert admin_client.post(_version_publish_url(100)).status_code == 200
+
+    def test_unshipped_channel_language_names_what_to_do(self, admin_client, lang_pl, lang_en):
+        _channel("fr-store", lang_pl, lang_en, _language("fr"))
+        call_command("loaddata", "cookie_banner", verbosity=0)
+        detail = admin_client.post(_version_publish_url(100)).json()["detail"]
+        assert "['fr']" in detail
+        assert "Add their texts to the draft" in detail

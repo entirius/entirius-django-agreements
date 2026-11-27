@@ -47,7 +47,7 @@ Tests need PostgreSQL: set `DATABASE_URL` (the default in `tests/settings.py` po
 - `api/` — `admin/` (v2, JWT + IsAdminUser) and `public/` (v2, AllowAny, channel-scoped).
 
 - `management/commands/` — `sync_agreement_channels` (channels from PIM), `migrate_crm_consents`,
-  `purge_cookie_consents` (retention purge of the cookie decision log), `load_legal_pages` (default legal pages,
+  `purge_cookie_consents` (retention purge of the cookie decision log), `publish_cookie_banner` (loads and publishes the default banner, idempotent), `load_legal_pages` (default legal pages,
   languages by ISO code; never `loaddata legal_pages`).
 - `checks.py` — configuration health checks (`agreements.storefront_url`), registered in `AppConfig.ready()`.
 
@@ -103,6 +103,7 @@ Layer rule: `API → Services → Models → DB`. No ORM in views.
   cover the languages of every channel. The two public cookie views format their own errors as the v2 envelope
   (module-local exception handler, no service-level handler assumed); the admin cookie view declares
   `access_area = "agreements.consents"`.
-- `fixtures/cookie_banner.yaml` is loaded once per stack: a re-load resets the definition and version 100 to draft.
+- `fixtures/cookie_banner.yaml` is loaded once per stack: a re-load resets the definition and version 100 to draft
+  (use `publish_cookie_banner`, which never re-loads). It ships pl/en/de/es; a channel with another language needs its texts added to the draft before publishing.
 - Seeded clause texts (the Emporium test package (`entirius-test-package-emporium`), `fixtures/django_agreements.cfg.yaml`) are `TEST —` placeholders: the lawyer's
   texts are pasted in the admin as a new version and published.
